@@ -1,0 +1,446 @@
+.cardContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  min-height: calc(100vh - 88px); /* Adjust for navbar height */
+  padding: 20px;
+  background: rgba(15, 15, 35, 0.95);
+  /* background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); */
+}
+
+.profileCard {
+  background: rgba(25, 25, 50, 0.95);
+  /* border: 2px solid rgba(78, 205, 196, 0.4); */
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 0;
+  width: 100%;
+  max-width: 800px; /* Wider for better layout */
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  transform: translateY(0);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  margin-top: 20px;
+  padding-top: 50px;
+  /*  padding-bottom: 100px; */
+}
+
+.profileCard:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+}
+
+.profileCard::before {
+  content: "";
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(135deg, crimson 0%, #667eea 50%, #764ba2 100%);
+  border-radius: 22px;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.profileCard:hover::before {
+  opacity: 0.1;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  padding: 24px 30px;
+  background: rgba(35, 35, 60, 0.8);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  gap: 24px;
+}
+
+.imageContainer {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.cardImage {
+  width: 80px;
+  height: 80px;
+  border-radius: 12px;
+  object-fit: cover;
+  border: 3px solid #fff;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.cardImage:hover {
+  transform: scale(1.05);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+}
+
+.cardImage::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  transition: left 0.5s;
+}
+
+.profileCard:hover .cardImage::after {
+  left: 100%;
+}
+
+.statusBadge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  color: white;
+  font-size: 9px;
+  font-weight: 600;
+  padding: 3px 6px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  animation: pulse 2s infinite;
+  transition: all 0.3s ease;
+}
+
+/* Active status badge */
+.statusBadge.active {
+  background: linear-gradient(135deg, #10b981, #059669);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+/* Inactive status badge */
+.statusBadge.inactive {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+  animation: none;
+}
+
+.headerInfo {
+  flex: 1;
+  text-align: left;
+}
+
+.name {
+  font-size: 24px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 6px 0;
+  letter-spacing: -0.3px;
+  transition: all 0.3s ease;
+}
+
+.position {
+  font-size: 14px;
+  color: #667eea;
+  margin: 0 0 3px 0;
+  font-weight: 500;
+}
+
+.department {
+  font-size: 13px;
+  color: #764ba2;
+  margin: 0;
+  font-weight: 500;
+}
+
+.cardBody {
+  padding: 24px 30px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.infoSection {
+  margin-bottom: 0;
+}
+
+.sectionTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0 0 12px 0;
+  padding-bottom: 6px;
+  border-bottom: 2px solid #e1e5e9;
+  position: relative;
+}
+
+.sectionTitle::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 30px;
+  height: 2px;
+  background: linear-gradient(135deg, crimson, #667eea);
+}
+
+.infoItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  margin-bottom: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  font-size: 13px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.infoItem:hover {
+  border-color: rgba(78, 205, 196, 0.6);
+  box-shadow: 0 0 0 2px rgba(78, 205, 196, 0.2);
+  transform: translateY(-1px);
+}
+
+.label {
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+  min-width: 80px;
+  font-size: 12px;
+}
+
+.value {
+  color: #667eea;
+  font-weight: 500;
+  font-size: 12px;
+  text-align: right;
+}
+
+/* Active status styling */
+.activeStatus {
+  color: #10b981 !important;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.activeStatus::before {
+  content: "●";
+  color: #10b981;
+  font-size: 14px;
+  animation: pulse 2s infinite;
+}
+
+/* Inactive status styling */
+.inactiveStatus {
+  color: #ef4444 !important;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.inactiveStatus::before {
+  content: "●";
+  color: #ef4444;
+  font-size: 14px;
+}
+
+.profileCard:hover .name {
+  color: #b91c3c;
+}
+
+.profileCard:hover .position {
+  opacity: 1;
+  color: #5a6fd8;
+}
+
+.profileCard:hover .department {
+  opacity: 1;
+  color: #6b46c1;
+}
+.logoContainer {
+  background: #fff;
+  border-radius: 16px;
+  padding: 20px;
+  margin-top: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 90%;
+  max-width: 800px; /* Same as profileCard max-width */
+  margin-bottom: 100px;
+}
+
+.logo {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: 20%;
+  border-radius: 10px;
+  background: transparent;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .cardContainer {
+    padding: 15px;
+    min-height: calc(100vh - 120px);
+  }
+
+  .profileCard {
+    max-width: 100%;
+    margin-top: 10px;
+  }
+
+  .cardHeader {
+    padding: 20px;
+    flex-direction: column;
+    text-align: center;
+    gap: 16px;
+  }
+
+  .headerInfo {
+    text-align: center;
+  }
+
+  .cardBody {
+    padding: 20px;
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .cardImage {
+    width: 70px;
+    height: 70px;
+  }
+
+  .name {
+    font-size: 20px;
+  }
+
+  .infoItem {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    padding: 10px;
+  }
+
+  .value {
+    text-align: left;
+  }
+}
+
+@media (max-width: 480px) {
+  .cardContainer {
+    padding: 10px;
+    min-height: calc(100vh - 100px);
+  }
+
+  .cardHeader {
+    padding: 16px;
+  }
+
+  .cardBody {
+    padding: 16px;
+    gap: 12px;
+  }
+
+  .name {
+    font-size: 18px;
+  }
+
+  .cardImage {
+    width: 60px;
+    height: 60px;
+  }
+
+  .infoItem {
+    padding: 8px;
+    font-size: 12px;
+  }
+
+  .skillTag {
+    font-size: 10px;
+    padding: 3px 8px;
+  }
+}
+
+/* Add these styles to your existing Profile.module.css */
+.error {
+  color: #e74c3c;
+  font-style: italic;
+}
+
+.retryButton {
+  margin-left: 10px;
+  padding: 4px 8px;
+  background: #3498db;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: background-color 0.2s;
+}
+
+.retryButton:hover {
+  background: #2980b9;
+}
+
+.retryButton:active {
+  transform: translateY(1px);
+}
+.loaderContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 60vh;
+  text-align: center;
+  color: #667eea;
+  font-weight: 500;
+}
+
+.loader {
+  width: 40px;
+  height: 40px;
+  border: 5px solid #eee;
+  border-top: 5px solid crimson;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 10px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

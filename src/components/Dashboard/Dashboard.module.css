@@ -1,0 +1,942 @@
+.dashboardContainer {
+  min-height: 100vh;
+  background: #0f0f23;
+  position: relative;
+  overflow-x: hidden;
+  padding-bottom: 50px;
+}
+
+.dashboardContainer::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at 20% 80%, #ff6b6b22 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, #4ecdc422 0%, transparent 50%),
+    radial-gradient(circle at 40% 40%, #45b7d122 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.mainContent {
+  padding: 100px 32px 32px;
+  max-width: 1400px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+/* Welcome Section */
+.welcomeSection {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  padding: 32px;
+  backdrop-filter: blur(20px);
+}
+
+.welcomeContent h1 {
+  color: #ffffff;
+  font-size: 32px;
+  font-weight: 300;
+  letter-spacing: 2px;
+  margin: 0 0 8px 0;
+  text-transform: uppercase;
+}
+
+.welcomeSubtitle {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 16px;
+  font-weight: 300;
+  letter-spacing: 1px;
+  margin: 0;
+}
+
+.currentTime {
+  text-align: right;
+}
+
+.timeDisplay {
+  color: #4ecdc4;
+  font-size: 28px;
+  font-weight: 300;
+  letter-spacing: 2px;
+  margin-bottom: 8px;
+  font-family: "Courier New", monospace;
+}
+
+.statusIndicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+  font-weight: 300;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  justify-content: flex-end;
+}
+
+.statusDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+.checkedIn {
+  background: #4ecdc4;
+  box-shadow: 0 0 10px rgba(78, 205, 196, 0.5);
+}
+
+.checkedOut {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+
+
+/* Current Status Card */
+.currentStatusCard {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(78, 205, 196, 0.3);
+  border-radius: 20px;
+  padding: 24px;
+  margin-bottom: 32px;
+  backdrop-filter: blur(20px);
+  box-shadow: 0 0 30px rgba(78, 205, 196, 0.1);
+}
+
+.statusHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.statusHeader h3 {
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 300;
+  letter-spacing: 1px;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.liveIndicator {
+  background: linear-gradient(90deg, #ff6b6b, #4ecdc4);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 50px;
+  font-size: 12px;
+  font-weight: 300;
+  letter-spacing: 1px;
+  animation: pulse 2s infinite;
+}
+
+.statusDetails {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.statusItem {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.statusLabel {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 12px;
+  font-weight: 300;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.statusValue {
+  color: #4ecdc4;
+  font-size: 16px;
+  font-weight: 300;
+  letter-spacing: 1px;
+}
+
+/* Metrics Grid */
+.metricsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+  margin-bottom: 40px;
+}
+
+.metricCard {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 24px;
+  backdrop-filter: blur(20px);
+  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.metricCard::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(78, 205, 196, 0.1),
+    transparent
+  );
+  transition: left 0.5s ease;
+}
+
+.metricCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 32px rgba(78, 205, 196, 0.2);
+  border-color: rgba(78, 205, 196, 0.3);
+}
+
+.metricCard:hover::before {
+  left: 100%;
+}
+
+.metricIcon {
+  font-size: 32px;
+  margin-bottom: 16px;
+  display: block;
+}
+
+.metricContent {
+  position: relative;
+  z-index: 2;
+}
+
+.metricValue {
+  color: #4ecdc4;
+  font-size: 28px;
+  font-weight: 300;
+  letter-spacing: 1px;
+  margin: 0 0 8px 0;
+}
+
+.metricLabel {
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 300;
+  letter-spacing: 1px;
+  margin: 0 0 4px 0;
+  text-transform: uppercase;
+}
+
+.metricSubtext {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 12px;
+  font-weight: 300;
+  letter-spacing: 1px;
+}
+
+/* Activities Section */
+.activitiesSection {
+  margin-bottom: 40px;
+}
+
+.sectionHeader {
+  margin-bottom: 24px;
+}
+
+.sectionTitle {
+  color: #ffffff;
+  font-size: 24px;
+  font-weight: 300;
+  letter-spacing: 2px;
+  margin: 0 0 4px 0;
+  text-transform: uppercase;
+}
+
+.sectionSubtitle {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 14px;
+  font-weight: 300;
+  letter-spacing: 1px;
+}
+
+.activitiesList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.activityItem {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 20px;
+  backdrop-filter: blur(20px);
+  display: flex;
+  gap: 16px;
+  transition: all 0.4s ease;
+}
+
+.activityItem:hover {
+  transform: translateX(4px);
+  border-color: rgba(78, 205, 196, 0.3);
+  box-shadow: 0 4px 20px rgba(78, 205, 196, 0.1);
+}
+
+.activityIcon {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  font-size: 18px;
+}
+
+.activityContent {
+  flex: 1;
+}
+
+.activityHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+
+.activityTitle {
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 300;
+  letter-spacing: 1px;
+  margin: 0;
+}
+
+.activityMeta {
+  display: flex;
+  gap: 12px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: 300;
+  letter-spacing: 1px;
+}
+
+.activityDescription {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+  font-weight: 300;
+  letter-spacing: 1px;
+  margin: 0 0 12px 0;
+}
+
+.activityFooter {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.activityStatus {
+  padding: 4px 12px;
+  border-radius: 50px;
+  font-size: 11px;
+  font-weight: 300;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.draft {
+  background: rgba(255, 107, 107, 0.2);
+  color: #ff6b6b;
+  border: 1px solid rgba(255, 107, 107, 0.3);
+}
+
+.pending {
+  background: rgba(255, 193, 7, 0.2);
+  color: #ffc107;
+  border: 1px solid rgba(255, 193, 7, 0.3);
+}
+
+.submitted,
+.completed {
+  background: rgba(78, 205, 196, 0.2);
+  color: #4ecdc4;
+  border: 1px solid rgba(78, 205, 196, 0.3);
+}
+
+.manualBadge {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.7);
+  padding: 4px 8px;
+  border-radius: 50px;
+  font-size: 10px;
+  font-weight: 300;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+/* No Activities */
+.noActivities {
+  text-align: center;
+  padding: 60px 20px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  backdrop-filter: blur(20px);
+}
+
+.noActivitiesIcon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.noActivities h3 {
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 300;
+  letter-spacing: 1px;
+  margin: 0 0 8px 0;
+  text-transform: uppercase;
+}
+
+.noActivities p {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+  font-weight: 300;
+  letter-spacing: 1px;
+  margin: 0;
+}
+
+/* Quick Actions */
+.quickActionsSection {
+  margin-bottom: 40px;
+}
+
+.quickActionsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.quickActionCard {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 24px;
+  backdrop-filter: blur(20px);
+  text-decoration: none;
+  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+  position: relative;
+  overflow: hidden;
+  display: block;
+}
+
+.quickActionCard::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, #ff6b6b, #4ecdc4);
+  transition: left 0.5s ease;
+  z-index: -1;
+  opacity: 0.1;
+}
+
+.quickActionCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 32px rgba(78, 205, 196, 0.2);
+  border-color: rgba(78, 205, 196, 0.3);
+}
+
+.quickActionCard:hover::before {
+  left: 0;
+}
+
+.quickActionIcon {
+  font-size: 32px;
+  margin-bottom: 16px;
+  display: block;
+}
+
+.quickActionCard h3 {
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 300;
+  letter-spacing: 1px;
+  margin: 0 0 8px 0;
+  text-transform: uppercase;
+}
+
+.quickActionCard p {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+  font-weight: 300;
+  letter-spacing: 1px;
+  margin: 0;
+}
+
+/* Refresh Card Specific Styles */
+.refreshCard {
+  border: none;
+  background: rgba(255, 255, 255, 0.03);
+  cursor: pointer;
+  text-align: left;
+}
+
+.refreshCard:focus {
+  outline: 2px solid #4ecdc4;
+  outline-offset: 2px;
+}
+
+.refreshIcon svg {
+  transition: transform 0.4s ease;
+  color: inherit;
+}
+
+.refreshCard:hover .refreshIcon svg {
+  transform: rotate(180deg);
+}
+
+.refreshCard:active .refreshIcon svg {
+  transform: rotate(360deg);
+  transition: transform 0.6s ease;
+}
+.logoContainer {
+  background: #fff;
+  border-radius: 16px;
+  padding: 20px;
+  margin: 30px auto 0 auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 90%; /* Reduced from 100% to add side spacing */
+  max-width: 1200px; /* Reduced from 1400px to make it smaller on desktop */
+  position: relative;
+  z-index: 1;
+}
+
+.logo {
+  display: block;
+  width: 100%;
+  max-width: 600px; /* Added max-width to limit the logo size */
+  height: auto;
+  border-radius: 10px;
+  background: transparent;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .logoContainer {
+    margin: -20px auto 70px auto;
+    padding: 15px;
+    width: calc(100% - 40px); /* Account for mainContent padding */
+    max-width: none;
+  }
+  .mainContent {
+    padding: 80px 20px 20px;
+  }
+
+  .welcomeSection {
+    flex-direction: column;
+    gap: 20px;
+    text-align: center;
+    padding: 24px;
+  }
+
+  .welcomeContent h1 {
+    font-size: 24px;
+    letter-spacing: 1px;
+  }
+
+  .welcomeSubtitle {
+    font-size: 14px;
+  }
+
+  .currentTime {
+    text-align: center;
+  }
+
+
+
+  .timeDisplay {
+    font-size: 24px;
+    letter-spacing: 1px;
+  }
+
+  .statusIndicator {
+    justify-content: center;
+  }
+
+  .metricsGrid {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 16px;
+  }
+
+  .metricCard {
+    padding: 20px;
+  }
+
+  .metricValue {
+    font-size: 24px;
+  }
+
+  .metricLabel {
+    font-size: 12px;
+  }
+
+  .statusDetails {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .currentStatusCard {
+    padding: 20px;
+  }
+
+  .sectionTitle {
+    font-size: 20px;
+    letter-spacing: 1px;
+  }
+
+  .activityItem {
+    padding: 16px;
+  }
+
+  .activityHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .activityMeta {
+    gap: 8px;
+  }
+
+  .quickActionsGrid {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+  }
+
+  .quickActionCard {
+    padding: 20px;
+  }
+
+  .quickActionIcon {
+    font-size: 28px;
+  }
+
+  .quickActionCard h3 {
+    font-size: 14px;
+  }
+
+  .quickActionCard p {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .logoContainer {
+    margin: -20px auto 70px auto;
+    padding: 12px;
+    width: calc(100% - 32px); /* Account for mainContent padding */
+  }
+  .mainContent {
+    padding: 70px 16px 16px;
+  }
+
+  .welcomeSection {
+    padding: 20px;
+    margin-bottom: 24px;
+  }
+
+  .welcomeContent h1 {
+    font-size: 20px;
+  }
+
+  .timeDisplay {
+    font-size: 20px;
+  }
+
+  .metricsGrid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .metricCard {
+    padding: 16px;
+  }
+
+  .metricIcon {
+    font-size: 24px;
+    margin-bottom: 12px;
+  }
+
+  .metricValue {
+    font-size: 20px;
+  }
+
+  .currentStatusCard {
+    padding: 16px;
+    margin-bottom: 24px;
+  }
+
+  .statusHeader h3 {
+    font-size: 16px;
+  }
+
+  .liveIndicator {
+    font-size: 10px;
+    padding: 3px 8px;
+  }
+
+  .sectionTitle {
+    font-size: 18px;
+    margin-bottom: 16px;
+  }
+
+  .activitiesSection {
+    margin-bottom: 24px;
+  }
+
+  .activityItem {
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .activityIcon {
+    width: 32px;
+    height: 32px;
+    font-size: 16px;
+  }
+
+  .activityTitle {
+    font-size: 14px;
+  }
+
+  .activityDescription {
+    font-size: 12px;
+  }
+
+  .activityMeta {
+    font-size: 10px;
+  }
+
+  .activityStatus {
+    font-size: 10px;
+    padding: 3px 8px;
+  }
+
+  .manualBadge {
+    font-size: 9px;
+    padding: 3px 6px;
+  }
+
+  .noActivities {
+    padding: 40px 16px;
+  }
+
+  .noActivitiesIcon {
+    font-size: 36px;
+    margin-bottom: 12px;
+  }
+
+  .noActivities h3 {
+    font-size: 16px;
+  }
+
+  .noActivities p {
+    font-size: 12px;
+  }
+
+  .quickActionsGrid {
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+  }
+
+  .quickActionCard {
+    padding: 16px;
+  }
+
+  .quickActionIcon {
+    font-size: 24px;
+    margin-bottom: 12px;
+  }
+
+  .quickActionCard h3 {
+    font-size: 12px;
+  }
+
+  .quickActionCard p {
+    font-size: 11px;
+  }
+}
+
+/* Enhanced Animations */
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.welcomeSection {
+  animation: slideInUp 0.6s ease-out;
+}
+
+.currentStatusCard {
+  animation: slideInUp 0.6s ease-out 0.1s both;
+}
+
+.metricsGrid {
+  animation: slideInUp 0.6s ease-out 0.2s both;
+}
+
+.activitiesSection {
+  animation: slideInUp 0.6s ease-out 0.3s both;
+}
+
+.quickActionsSection {
+  animation: slideInUp 0.6s ease-out 0.4s both;
+}
+
+/* Accessibility Improvements */
+.metricCard:focus,
+.quickActionCard:focus,
+.activityItem:focus {
+  outline: 2px solid #4ecdc4;
+  outline-offset: 2px;
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  .dashboardContainer::before,
+  .float,
+  .pulse,
+  .slideInUp,
+  .fadeIn {
+    animation: none;
+  }
+
+  .metricCard,
+  .quickActionCard,
+  .activityItem {
+    transition: none;
+  }
+
+  .metricCard:hover,
+  .quickActionCard:hover,
+  .activityItem:hover {
+    transform: none;
+  }
+
+  .metricCard::before,
+  .quickActionCard::before {
+    transition: none;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .dashboardContainer::before {
+    display: none;
+  }
+
+  .mainContent {
+    background: white;
+    color: black;
+  }
+
+  .welcomeSection,
+  .currentStatusCard,
+  .metricCard,
+  .activityItem,
+  .quickActionCard {
+    background: white;
+    border: 1px solid #ccc;
+    box-shadow: none;
+    backdrop-filter: none;
+  }
+
+  .welcomeContent h1,
+  .sectionTitle,
+  .metricValue,
+  .metricLabel,
+  .activityTitle {
+    color: black;
+  }
+
+  .welcomeSubtitle,
+  .metricSubtext,
+  .activityDescription {
+    color: #666;
+  }
+
+  .quickActionsSection {
+    display: none;
+  }
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+  .dashboardContainer {
+    background: #000;
+  }
+
+  .welcomeSection,
+  .currentStatusCard,
+  .metricCard,
+  .activityItem,
+  .quickActionCard {
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+  }
+
+  .welcomeContent h1,
+  .sectionTitle,
+  .metricValue,
+  .metricLabel,
+  .activityTitle {
+    color: #fff;
+  }
+
+  .timeDisplay,
+  .statusValue {
+    color: #4ecdc4;
+  }
+}

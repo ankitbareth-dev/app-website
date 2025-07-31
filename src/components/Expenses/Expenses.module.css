@@ -1,0 +1,987 @@
+/* Main Container */
+.expensesContainer {
+  min-height: calc(100vh - 88px);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Summary Section */
+.summarySection {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  margin-bottom: 10px;
+}
+
+.summaryCard {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.summaryCard:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+}
+
+.summaryCard::before {
+  content: "";
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(135deg, crimson 0%, #667eea 50%, #764ba2 100%);
+  border-radius: 18px;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.summaryCard:hover::before {
+  opacity: 0.1;
+}
+
+.summaryCard h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: #666;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.totalAmount {
+  font-size: 28px;
+  font-weight: 700;
+  color: crimson;
+  margin: 0;
+}
+
+.totalCount {
+  font-size: 28px;
+  font-weight: 700;
+  color: #667eea;
+  margin: 0;
+}
+
+.monthlyAmount {
+  font-size: 28px;
+  font-weight: 700;
+  color: #10b981;
+  margin: 0;
+}
+
+/* Action Section */
+.actionSection {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px 0;
+}
+
+.addButton {
+  padding: 16px 32px;
+  background: linear-gradient(135deg, crimson 0%, #b91c3c 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  min-width: 180px;
+  box-shadow: 0 4px 15px rgba(220, 20, 60, 0.2);
+}
+
+.addButton:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 30px rgba(220, 20, 60, 0.4);
+}
+
+.addButton::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transition: left 0.5s;
+}
+
+.addButton:hover::before {
+  left: 100%;
+}
+
+/* Form Overlay */
+.formOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(5px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.formContainer {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  animation: slideUp 0.3s ease-out;
+  position: relative;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.formHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 30px;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: 20px 20px 0 0;
+}
+
+.formHeader h2 {
+  font-size: 20px;
+  font-weight: 700;
+  color: crimson;
+  margin: 0;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #666;
+  cursor: pointer;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.closeButton:hover {
+  background: rgba(220, 20, 60, 0.1);
+  color: crimson;
+}
+
+/* Form Styles */
+.expenseForm {
+  padding: 30px;
+}
+
+.formRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+}
+
+.formGroup label {
+  display: block;
+  color: #333;
+  font-weight: 600;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.formGroup input,
+.formGroup select,
+.formGroup textarea {
+  width: 100%;
+  padding: 12px 16px;
+  background: #fff;
+  border: 2px solid #e1e5e9;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  font-family: inherit;
+}
+
+.formGroup input:focus,
+.formGroup select:focus,
+.formGroup textarea:focus {
+  outline: none;
+  border-color: crimson;
+  box-shadow: 0 0 0 3px rgba(220, 20, 60, 0.1);
+}
+
+.formGroup textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.formActions {
+  display: flex;
+  gap: 16px;
+  justify-content: flex-end;
+  margin-top: 30px;
+}
+
+.cancelButton {
+  padding: 12px 24px;
+  background: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.cancelButton:hover {
+  background: #5a6268;
+  transform: translateY(-2px);
+}
+
+.submitButton {
+  padding: 12px 24px;
+  background: linear-gradient(135deg, crimson 0%, #b91c3c 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.submitButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(220, 20, 60, 0.3);
+}
+
+/* Expenses Section */
+.expensesSection {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 0;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.sectionHeader {
+  padding: 24px 30px;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.sectionHeader h2 {
+  font-size: 20px;
+  font-weight: 700;
+  color: crimson;
+  margin: 0;
+}
+
+.noExpenses {
+  padding: 60px 30px;
+  text-align: center;
+  color: #666;
+}
+
+.noExpenses p {
+  margin-bottom: 10px;
+  font-size: 16px;
+}
+
+.expensesList {
+  padding: 20px 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.expenseCard {
+  background: #fff;
+  border: 1px solid #e1e5e9;
+  border-radius: 12px;
+  padding: 20px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.expenseCard:hover {
+  border-color: crimson;
+  box-shadow: 0 4px 15px rgba(220, 20, 60, 0.1);
+  transform: translateY(-2px);
+}
+
+.expenseHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.expenseTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+}
+
+.expenseActions {
+  display: flex;
+  gap: 8px;
+}
+
+.editButton {
+  padding: 6px 12px;
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.editButton:hover {
+  background: #5a6fd8;
+  transform: translateY(-1px);
+}
+
+.expenseDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.expenseInfo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.expenseAmount {
+  font-size: 18px;
+  font-weight: 700;
+  color: #10b981;
+}
+
+.expenseCategory {
+  background: rgba(102, 126, 234, 0.1);
+  color: #667eea;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.expenseMeta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  color: #666;
+}
+
+.expenseDate {
+  font-weight: 500;
+}
+
+.receiptIndicator {
+  color: #764ba2;
+  font-weight: 500;
+}
+
+.expenseDescription {
+  margin: 8px 0 0 0;
+  color: #555;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.expenseFooter {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.createdDate {
+  color: #888;
+  font-size: 11px;
+}
+
+/* Category Section */
+.categorySection {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 30px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.categorySection h2 {
+  font-size: 20px;
+  font-weight: 700;
+  color: crimson;
+  margin: 0 0 20px 0;
+}
+
+.categoryGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.categoryCard {
+  background: #fff;
+  border: 1px solid #e1e5e9;
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.categoryCard:hover {
+  border-color: #667eea;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.1);
+  transform: translateY(-2px);
+}
+
+.categoryCard h4 {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 8px 0;
+}
+
+.categoryCard p {
+  font-size: 18px;
+  font-weight: 700;
+  color: #10b981;
+  margin: 0 0 4px 0;
+}
+
+.categoryCard small {
+  color: #666;
+  font-size: 12px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .expensesContainer {
+    padding: 15px;
+    gap: 15px;
+  }
+
+  .summarySection {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+
+  .summaryCard {
+    padding: 20px;
+  }
+
+  .totalAmount,
+  .totalCount,
+  .monthlyAmount {
+    font-size: 24px;
+  }
+
+  .addButton {
+    padding: 14px 28px;
+    font-size: 15px;
+    min-width: 160px;
+  }
+
+  .formContainer {
+    margin: 10px;
+    max-width: calc(100vw - 20px);
+  }
+
+  .formHeader {
+    padding: 20px;
+  }
+
+  .formHeader h2 {
+    font-size: 18px;
+  }
+
+  .expenseForm {
+    padding: 20px;
+  }
+
+  .formRow {
+    grid-template-columns: 1fr;
+    gap: 15px;
+    margin-bottom: 15px;
+  }
+
+  .formGroup input,
+  .formGroup select,
+  .formGroup textarea {
+    padding: 12px 14px;
+    font-size: 15px;
+  }
+
+  .formActions {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .cancelButton,
+  .submitButton {
+    width: 100%;
+    padding: 14px;
+  }
+
+  .sectionHeader {
+    padding: 20px;
+  }
+
+  .sectionHeader h2 {
+    font-size: 18px;
+  }
+
+  .expensesList {
+    padding: 15px 20px;
+  }
+
+  .expenseCard {
+    padding: 16px;
+  }
+
+  .expenseHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .expenseTitle {
+    font-size: 15px;
+  }
+
+  .expenseAmount {
+    font-size: 16px;
+  }
+
+  .expenseInfo {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .expenseMeta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .categorySection {
+    padding: 20px;
+  }
+
+  .categorySection h2 {
+    font-size: 18px;
+  }
+
+  .categoryGrid {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+  }
+
+  .categoryCard {
+    padding: 16px;
+  }
+
+  .categoryCard p {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .expensesContainer {
+    padding: 10px;
+    gap: 12px;
+  }
+
+  .summaryCard {
+    padding: 16px;
+  }
+
+  .summaryCard h3 {
+    font-size: 12px;
+  }
+
+  .totalAmount,
+  .totalCount,
+  .monthlyAmount {
+    font-size: 20px;
+  }
+
+  .addButton {
+    padding: 12px 24px;
+    font-size: 14px;
+    min-width: 140px;
+  }
+
+  .formContainer {
+    margin: 5px;
+    max-width: calc(100vw - 10px);
+    max-height: 95vh;
+  }
+
+  .formHeader {
+    padding: 16px;
+  }
+
+  .formHeader h2 {
+    font-size: 16px;
+  }
+
+  .closeButton {
+    width: 24px;
+    height: 24px;
+    font-size: 20px;
+  }
+
+  .expenseForm {
+    padding: 16px;
+  }
+
+  .formGroup label {
+    font-size: 13px;
+  }
+
+  .formGroup input,
+  .formGroup select,
+  .formGroup textarea {
+    padding: 10px 12px;
+    font-size: 14px;
+  }
+
+  .formActions {
+    margin-top: 20px;
+  }
+
+  .cancelButton,
+  .submitButton {
+    padding: 12px;
+    font-size: 13px;
+  }
+
+  .sectionHeader {
+    padding: 16px;
+  }
+
+  .sectionHeader h2 {
+    font-size: 16px;
+  }
+
+  .noExpenses {
+    padding: 40px 16px;
+  }
+
+  .noExpenses p {
+    font-size: 14px;
+  }
+
+  .expensesList {
+    padding: 12px 16px;
+    gap: 12px;
+  }
+
+  .expenseCard {
+    padding: 14px;
+  }
+
+  .expenseTitle {
+    font-size: 14px;
+  }
+
+  .expenseAmount {
+    font-size: 15px;
+  }
+
+  .expenseCategory {
+    font-size: 11px;
+    padding: 3px 6px;
+  }
+
+  .expenseDescription {
+    font-size: 13px;
+  }
+
+  .createdDate {
+    font-size: 10px;
+  }
+
+  .editButton {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+
+  .categorySection {
+    padding: 16px;
+  }
+
+  .categorySection h2 {
+    font-size: 16px;
+    margin-bottom: 16px;
+  }
+
+  .categoryGrid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .categoryCard {
+    padding: 12px;
+  }
+
+  .categoryCard h4 {
+    font-size: 13px;
+  }
+
+  .categoryCard p {
+    font-size: 14px;
+  }
+
+  .categoryCard small {
+    font-size: 11px;
+  }
+}
+
+/* Loading and Error States */
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+  color: #666;
+  font-size: 16px;
+}
+
+.error {
+  color: #e74c3c;
+  font-style: italic;
+  text-align: center;
+  padding: 20px;
+}
+
+.retryButton {
+  margin-left: 10px;
+  padding: 4px 8px;
+  background: #3498db;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: background-color 0.2s;
+}
+
+.retryButton:hover {
+  background: #2980b9;
+}
+
+.retryButton:active {
+  transform: translateY(1px);
+}
+
+/* Animation for new expenses */
+@keyframes slideInFromRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.expenseCard.new {
+  animation: slideInFromRight 0.5s ease-out;
+}
+
+/* Hover effects for better UX */
+.summaryCard:hover .totalAmount,
+.summaryCard:hover .totalCount,
+.summaryCard:hover .monthlyAmount {
+  transform: scale(1.05);
+  transition: transform 0.2s ease;
+}
+
+/* Focus styles for accessibility */
+.addButton:focus,
+.editButton:focus,
+.submitButton:focus,
+.cancelButton:focus {
+  outline: 2px solid crimson;
+  outline-offset: 2px;
+}
+
+.formGroup input:focus,
+.formGroup select:focus,
+.formGroup textarea:focus {
+  outline: none;
+  border-color: crimson;
+  box-shadow: 0 0 0 3px rgba(220, 20, 60, 0.1);
+}
+
+/* Print styles */
+@media print {
+  .addButton,
+  .editButton,
+  .formOverlay {
+    display: none !important;
+  }
+
+  .expensesContainer {
+    padding: 0;
+  }
+
+  .expenseCard {
+    break-inside: avoid;
+    border: 1px solid #ccc;
+    margin-bottom: 10px;
+  }
+}
+.draftButton {
+  padding: 12px 24px;
+  background: #f39c12;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.draftButton:hover {
+  background: #e67e22;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(243, 156, 18, 0.3);
+}
+
+.statusBadge {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.statusBadge.draft {
+  background: rgba(243, 156, 18, 0.1);
+  color: #f39c12;
+  border: 1px solid rgba(243, 156, 18, 0.3);
+}
+
+.statusBadge.submitted {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.expenseCard.draft {
+  border-left: 4px solid #f39c12;
+  background: rgba(243, 156, 18, 0.02);
+}
+
+.expenseCard.submitted {
+  border-left: 4px solid #10b981;
+}
+@media (max-width: 768px) {
+  .formActions {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .cancelButton,
+  .draftButton,
+  .submitButton {
+    width: 100%;
+    padding: 14px;
+  }
+}
+.loadMoreSection {
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+  border-top: 1px solid #e1e5e9;
+}
+
+.loadMoreButton {
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.loadMoreButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+}
