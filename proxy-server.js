@@ -53,6 +53,41 @@ app.post("/api/login", async (req, res) => {
 });
 
 // Profile endpoint - handles /send_request
+app.post("/api/get-coordinates", async (req, res) => {
+  try {
+    const { model, id, db, login, password, apiKey } = req.body;
+
+    const response = await axios({
+      method: "get",
+      url: `http://3.109.255.36/send_request?model=${model}&Id=${id}&db=${db}`,
+      headers: {
+        login,
+        password,
+        "api-key": apiKey,
+        "Content-Type": "application/json",
+      },
+      data: JSON.stringify({
+        fields: [
+          "employee_latitude",
+          "employee_longitude",
+          "name",
+          "active_project",
+          "active_venue",
+        ],
+      }),
+    });
+
+    res.status(200).json(response.data);
+  } catch (error) {
+    console.error("❌ Get coordinates error:", error.message);
+    res.status(500).json({
+      error: "Get coordinates failed",
+      status: error.response?.status,
+      details: error.response?.data || error.message,
+    });
+  }
+});
+
 app.post("/api/profile", async (req, res) => {
   try {
     const { model, id, db, fields, login, password, apiKey } = req.body;
@@ -316,6 +351,110 @@ app.post("/api/tickets", async (req, res) => {
 
   console.log("✅ Ticket types response:", response.data);
   res.status(200).json(response.data);
+});
+
+// Get tickets endpoint - fetches created tickets
+app.post("/api/get-tickets", async (req, res) => {
+  try {
+    const { login, password, apiKey } = req.body;
+    console.log("🔍 Get tickets request:", {
+      login,
+      password,
+      apiKey,
+    });
+
+    const requestData = {
+      fields: [
+        "name",
+        "category_id",
+        "ticket_type_id",
+        "project_id",
+        "venue_id",
+        "create_date",
+        "user_id",
+        "stage_id",
+      ],
+    };
+
+    const response = await axios({
+      method: "get",
+      url: `http://3.109.255.36/send_request?model=helpdesk.ticket&db=eduquity`,
+      headers: {
+        login,
+        password,
+        "api-key": apiKey,
+        "Content-Type": "application/json",
+      },
+      data: JSON.stringify(requestData),
+    });
+
+    console.log("✅ Get tickets response:", response.data);
+    res.status(200).json(response.data);
+  } catch (error) {
+    console.error("❌ Get tickets error:", error.message);
+    res.status(500).json({
+      error: "Get tickets failed",
+      status: error.response?.status,
+      details: error.response?.data || error.message,
+    });
+  }
+});
+
+app.post("/api/create-ticket", async (req, res) => {
+  try {
+    const {
+      login,
+      password,
+      apiKey,
+      category_id,
+      ticket_type_id,
+      description,
+      user_id,
+    } = req.body;
+
+    console.log(
+      "values",
+      login,
+      password,
+      apiKey,
+      category_id,
+      ticket_type_id,
+      description,
+      user_id
+    );
+
+    const requestData = {
+      fields: ["category_id", "ticket_type_id", "description", "user_id"],
+      values: {
+        category_id,
+        ticket_type_id,
+        description,
+        user_id,
+      },
+    };
+
+    const response = await axios({
+      method: "post",
+      url: `http://3.109.255.36/send_request?model=helpdesk.ticket&db=eduquity`,
+      headers: {
+        login,
+        password,
+        "api-key": apiKey,
+        "Content-Type": "application/json",
+      },
+      data: JSON.stringify(requestData),
+    });
+
+    console.log("✅ Create ticket response:", response.data);
+    res.status(200).json(response.data);
+  } catch (error) {
+    console.error("❌ Create ticket error:", error.message);
+    res.status(500).json({
+      error: "Create ticket failed",
+      status: error.response?.status,
+      details: error.response?.data || error.message,
+    });
+  }
 });
 
 app.listen(PORT, () => {

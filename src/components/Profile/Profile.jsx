@@ -40,8 +40,8 @@ const Profile = () => {
             ? 72.552124
             : parsed.employee_longitude,
         employeeId: parsed.employeeId || "",
-        assigned_project: parsed.employee_assigned_project || "N/A",
-        assigned_venue: parsed.employee_assigned_venue || "N/A",
+        assigned_project: parsed.employee_assigned_project[1] || "N/A",
+        assigned_venue: parsed.employee_assigned_venue[1] || "N/A",
       });
     }
   };

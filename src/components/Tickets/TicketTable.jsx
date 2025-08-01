@@ -1,8 +1,13 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 import { useForm } from "react-hook-form";
 import { useAppContext } from "../../store/AppContext";
-
 import styles from "./TicketTable.module.css";
+const SuccessPopup = memo(({ message }) => (
+  <div className={styles.successPopup}>
+    <span className={styles.successIcon}>✅</span>
+    <span className={styles.successMessage}>{message}</span>
+  </div>
+));
 
 const TicketTable = () => {
   const { isCheckedIn } = useAppContext();
@@ -11,48 +16,19 @@ const TicketTable = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [categories, setCategories] = useState([]);
   const [allTicketTypes, setAllTicketTypes] = useState([]); // Store all ticket types
+  const [apiError, setApiError] = useState("");
   const [filteredTicketTypes, setFilteredTicketTypes] = useState([]); // Store filtered ticket types
   const [showCheckInMessage, setShowCheckInMessage] = useState(false);
+  // Add near other state declarations
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+
+  const [activeTab, setActiveTab] = useState("sent");
+  const [draftTickets, setDraftTickets] = useState([]);
 
   const [editingTicket, setEditingTicket] = useState(null);
-  const [tickets, setTickets] = useState([
-    {
-      id: "TKT-001",
-      title: "Login authentication issue",
-      type: "Bug",
-      riskLevel: "High",
-      createdBy: "John Smith",
-      stage: "In Progress",
-      status: "submitted",
-    },
-    {
-      id: "TKT-002",
-      title: "Feature request for dashboard",
-      type: "Feature",
-      riskLevel: "",
-      createdBy: "Sarah Wilson",
-      stage: "Done",
-      status: "submitted",
-    },
-    {
-      id: "TKT-003",
-      title: "Database performance optimization",
-      type: "Task",
-      riskLevel: "Medium",
-      createdBy: "Mike Davis",
-      stage: "Sent",
-      status: "submitted",
-    },
-    {
-      id: "TKT-004",
-      title: "UI component styling fix",
-      type: "Bug",
-      riskLevel: "Low",
-      createdBy: "Emma Brown",
-      stage: "In Progress",
-      status: "submitted",
-    },
-  ]);
+  const [tickets, setTickets] = useState([]);
 
   const [stats, setStats] = useState({
     total: 0,
@@ -69,14 +45,38 @@ const TicketTable = () => {
     setValue,
   } = useForm();
 
-  // Calculate stats whenever tickets change
+  const userLoginData = JSON.parse(localStorage.getItem("loginData"));
+  if (!userLoginData) {
+    alert("NO login data found Please Login again.");
+  }
+
+  const projectName = userLoginData.employee_assigned_project[1];
+  const userVenue = userLoginData.employee_assigned_venue[1];
+  const userName = userLoginData.name;
+
+  useEffect(() => {
+    const savedDrafts = localStorage.getItem("draftTickets");
+    if (savedDrafts) {
+      try {
+        setDraftTickets(JSON.parse(savedDrafts));
+      } catch (error) {
+        console.error("Error loading draft tickets:", error);
+      }
+    }
+  }, []);
+
+  // Update the stats calculation to handle API data stages correctly
   useEffect(() => {
     const total = tickets.length;
     const inProgress = tickets.filter(
-      (t) => t.stage.toLowerCase() === "in progress"
+      (t) => t.stage?.toLowerCase() === "in progress"
     ).length;
-    const done = tickets.filter((t) => t.stage.toLowerCase() === "done").length;
-    const sent = tickets.filter((t) => t.stage.toLowerCase() === "sent").length;
+    const done = tickets.filter(
+      (t) => t.stage?.toLowerCase() === "done"
+    ).length;
+    const sent = tickets.filter(
+      (t) => t.stage?.toLowerCase() === "sent"
+    ).length;
 
     setStats({ total, inProgress, done, sent });
   }, [tickets]);
@@ -128,13 +128,13 @@ const TicketTable = () => {
     if (selectedCategoryName === "none") {
       setFilteredTicketTypes([]);
       // Clear form fields when no category is selected
-      setApiData(prevData => ({
+      setApiData((prevData) => ({
         ...prevData,
         riskLevel: "",
         priority: "",
         incidentDepartment: "",
         expectedResolutionTime: "",
-        noOfSystemAffected: false
+        noOfSystemAffected: "",
       }));
       // Reset ticket type dropdown
       setValue("ticketType", "");
@@ -161,17 +161,17 @@ const TicketTable = () => {
           );
 
           setFilteredTicketTypes(filtered);
-          
+
           // Clear form fields when category changes (user needs to select ticket type again)
-          setApiData(prevData => ({
+          setApiData((prevData) => ({
             ...prevData,
             riskLevel: "",
             priority: "",
             incidentDepartment: "",
             expectedResolutionTime: "",
-            noOfSystemAffected: false
+            noOfSystemAffected: "",
           }));
-          
+
           // Reset ticket type dropdown
           setValue("ticketType", "");
         }
@@ -188,32 +188,39 @@ const TicketTable = () => {
     }
 
     // Find the selected ticket type data from localStorage
-    const storedTicketTypes = localStorage.getItem('ticketTypes');
+    const storedTicketTypes = localStorage.getItem("ticketTypes");
     if (storedTicketTypes) {
       try {
         const parsedTicketTypes = JSON.parse(storedTicketTypes);
-        const selectedTicketType = parsedTicketTypes.find(ticketType => 
-          ticketType.name === selectedTicketTypeName
+        const selectedTicketType = parsedTicketTypes.find(
+          (ticketType) => ticketType.name === selectedTicketTypeName
         );
 
         if (selectedTicketType) {
           // Update form fields with the selected ticket type data
           const formData = {
-            riskLevel: Array.isArray(selectedTicketType.risk_level_id) ? selectedTicketType.risk_level_id[1] : '',
-            priority: Array.isArray(selectedTicketType.priority_id) ? selectedTicketType.priority_id[1] : '',
-            incidentDepartment: Array.isArray(selectedTicketType.department_id) ? selectedTicketType.department_id[1] : '',
-            expectedResolutionTime: selectedTicketType.expected_resolution_time || '',
-            noOfSystemAffected: selectedTicketType.no_of_system_affected || false
+            riskLevel: Array.isArray(selectedTicketType.risk_level_id)
+              ? selectedTicketType.risk_level_id[1]
+              : "",
+            priority: Array.isArray(selectedTicketType.priority_id)
+              ? selectedTicketType.priority_id[1]
+              : "",
+            incidentDepartment: Array.isArray(selectedTicketType.department_id)
+              ? selectedTicketType.department_id[1]
+              : "",
+            expectedResolutionTime:
+              selectedTicketType.expected_resolution_time || "",
+            noOfSystemAffected: selectedTicketType.no_of_system_affected || "",
           };
 
           // Update apiData with the new form data
-          setApiData(prevData => ({
+          setApiData((prevData) => ({
             ...prevData,
-            ...formData
+            ...formData,
           }));
         }
       } catch (error) {
-        console.error('Error processing ticket type selection:', error);
+        console.error("Error processing ticket type selection:", error);
       }
     }
   };
@@ -238,49 +245,103 @@ const TicketTable = () => {
       project: "Project 1",
       venue: "none",
       createdBy: "administrator",
-      riskLevel: "Medium",
-      incidentDepartment: "IT Support",
+      riskLevel: "",
+      incidentDepartment: "",
+      priority: "",
+      expectedResolutionTime: "",
+      noOfSystemAffected: "",
       createdOn: new Date().toLocaleString(),
       category: "none",
     };
+  };
+
+  const transformApiTicket = (apiTicket) => {
+    return {
+      id: apiTicket.id ? `HT${String(apiTicket.id).padStart(5, "0")}` : "N/A",
+      title: apiTicket.name || "Untitled",
+      type: Array.isArray(apiTicket.ticket_type_id)
+        ? apiTicket.ticket_type_id[1]
+        : "N/A",
+      category: Array.isArray(apiTicket.category_id)
+        ? apiTicket.category_id[1]
+        : "N/A",
+      project_id: apiTicket.project_id || ["", "N/A"],
+      venue_id: apiTicket.venue_id || ["", "N/A"],
+      createdBy: Array.isArray(apiTicket.user_id)
+        ? apiTicket.user_id[1]
+        : "Unknown",
+      assigned_user: apiTicket.user_id || ["", "N/A"],
+      stage: Array.isArray(apiTicket.stage_id) ? apiTicket.stage_id[1] : "New",
+      create_date: apiTicket.create_date || new Date().toISOString(),
+      status: apiTicket.status || "new",
+    };
+  };
+  const fetchTickets = async () => {
+    try {
+      setIsLoading(true);
+      setApiError("");
+
+      const response = await fetch("/api/get-tickets", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          login: userLoginData.email,
+          password: userLoginData.password,
+          apiKey: userLoginData["api-Key"],
+        }),
+      });
+      if (!response.ok) {
+        throw new Error("Failed to fetch tickets");
+      }
+
+      const data = await response.json();
+
+      if (data && Array.isArray(data.records)) {
+        const transformedTickets = data.records.map(transformApiTicket);
+        setTickets(transformedTickets);
+      } else {
+        setTickets([]);
+        setApiError("No tickets found");
+      }
+    } catch (error) {
+      console.error("Error fetching tickets:", error);
+      setApiError("Error loading tickets. Please try again later.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Add these new functions
 
   const handleSaveAsDraft = (data) => {
     const draftTicket = {
-      id: `TKT-${String(tickets.length + 1).padStart(3, "0")}`,
-      title: data.ticketType || "New Ticket",
-      type: data.ticketType,
-      riskLevel: apiData.riskLevel,
-      createdBy: apiData.createdBy,
-      stage: "Draft",
-      status: "draft",
+      id: `DRAFT-${String(Date.now()).slice(-5)}`,
+      category: data.category || "N/A",
+      type: data.ticketType || "N/A",
+      project_id: [null, projectName],
+      venue_id: [null, userVenue],
       description: data.description,
-      formData: { ...data, ...apiData }, // Store form data for editing
+      createdBy: userName,
+      stage: "Draft",
+      created_at: new Date().toISOString(),
+      formData: { ...data, ...apiData },
     };
 
-    setTickets((prevTickets) => [...prevTickets, draftTicket]);
+    const updatedDrafts = [...draftTickets, draftTicket];
+    setDraftTickets(updatedDrafts);
+    localStorage.setItem("draftTickets", JSON.stringify(updatedDrafts));
+
+    // Show success popup
+    setSuccessMessage("Ticket saved as draft");
+    setShowSuccessPopup(true);
+    setTimeout(() => setShowSuccessPopup(false), 3000);
+
+    // Reset form
     reset();
     setShowForm(false);
     setApiData(null);
-  };
-
-  const handleEditTicket = (ticket) => {
-    setEditingTicket(ticket);
-    setApiData(ticket.formData);
-    setShowForm(true);
-    setTimeout(() => {
-      document.querySelector(`.${styles.formContainer}`)?.scrollIntoView({
-        behavior: "smooth",
-      });
-    }, 100);
-    // Pre-populate form with ticket data
-    reset(ticket.formData);
-  };
-
-  const handleDeleteTicket = (ticketId) => {
-    setTickets((prevTickets) => prevTickets.filter((t) => t.id !== ticketId));
   };
 
   const handleGenerateTicket = async () => {
@@ -303,9 +364,9 @@ const TicketTable = () => {
         if (storedTicketTypes && storedCategories) {
           // Data exists in localStorage, use it instead of calling API
           console.log("Using existing data from localStorage");
-          
+
           const parsedTicketTypes = JSON.parse(storedTicketTypes);
-          
+
           // Set the ticket types if not already set
           if (allTicketTypes.length === 0) {
             setAllTicketTypes(parsedTicketTypes);
@@ -316,14 +377,16 @@ const TicketTable = () => {
             const categoryNames = parsedTicketTypes
               .filter((record) => Array.isArray(record.category_id))
               .map((record) => record.category_id[1])
-              .filter((name) => name && typeof name === "string" && name.trim() !== "")
+              .filter(
+                (name) => name && typeof name === "string" && name.trim() !== ""
+              )
               .filter((name, index, arr) => arr.indexOf(name) === index);
 
             const formattedCategories = categoryNames.map((name, index) => ({
               id: index + 1,
               complete_name: name,
             }));
-            
+
             setCategories(formattedCategories);
           }
 
@@ -333,7 +396,7 @@ const TicketTable = () => {
         } else {
           // Data doesn't exist, call API
           console.log("Data not found in localStorage, calling API");
-          
+
           const requestData = {
             model: "helpdesk.ticket.type",
             db: "eduquity",
@@ -375,7 +438,9 @@ const TicketTable = () => {
             const categoryNames = ticketTypesData.records
               .filter((record) => Array.isArray(record.category_id))
               .map((record) => record.category_id[1])
-              .filter((name) => name && typeof name === "string" && name.trim() !== "")
+              .filter(
+                (name) => name && typeof name === "string" && name.trim() !== ""
+              )
               .filter((name, index, arr) => arr.indexOf(name) === index);
 
             const formattedCategories = categoryNames.map((name, index) => ({
@@ -412,47 +477,200 @@ const TicketTable = () => {
     }
   };
 
-  const onSubmit = (data) => {
-    const ticketData = {
-      ...data,
-      ...apiData,
-    };
+  const onSubmit = async (data) => {
+    try {
+      setIsSubmitting(true);
 
-    if (editingTicket) {
-      // Update existing draft
-      setTickets((prevTickets) =>
-        prevTickets.map((ticket) =>
-          ticket.id === editingTicket.id
-            ? {
-                ...ticket,
-                ...ticketData,
-                stage: "In Progress",
-                status: "submitted",
-              }
-            : ticket
-        )
+      const selectedTicketType = filteredTicketTypes.find(
+        (type) => type.name === data.ticketType
       );
-      setEditingTicket(null);
-    } else {
-      // Create new submitted ticket
-      const newTicket = {
-        id: `TKT-${String(tickets.length + 1).padStart(3, "0")}`,
-        title: data.ticketType || "New Ticket",
-        type: data.ticketType,
-        riskLevel: apiData.riskLevel,
-        createdBy: apiData.createdBy,
-        stage: "In Progress",
-        status: "submitted",
-        description: data.description,
-      };
-      setTickets((prevTickets) => [...prevTickets, newTicket]);
-    }
 
-    reset();
-    setShowForm(false);
-    setApiData(null);
-    setCategories([]);
-    setFilteredTicketTypes([]);
+      if (!selectedTicketType) {
+        throw new Error("Please select a valid ticket type");
+      }
+
+      const ticketData = {
+        category_id: selectedTicketType.category_id[0],
+        ticket_type_id: selectedTicketType.id,
+        description: data.description,
+        user_id: userLoginData.Id,
+        login: userLoginData.email,
+        password: userLoginData.password,
+        apiKey: userLoginData["api-Key"],
+      };
+
+      const response = await fetch("/api/create-ticket", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(ticketData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to create ticket");
+      }
+
+      await response.json();
+
+      // If we were editing a draft, remove it from drafts
+      if (editingTicket) {
+        const updatedDrafts = draftTickets.filter(
+          (d) => d.id !== editingTicket.id
+        );
+        setDraftTickets(updatedDrafts);
+        localStorage.setItem("draftTickets", JSON.stringify(updatedDrafts));
+      }
+
+      // Reset states
+      setShowForm(false);
+      setApiData(null);
+      setCategories([]);
+      setFilteredTicketTypes([]);
+      setEditingTicket(null);
+      reset();
+
+      // Refresh tickets list
+      await fetchTickets();
+
+      // Show success message
+      setSuccessMessage(
+        editingTicket
+          ? "Draft updated and submitted successfully"
+          : "Ticket created successfully"
+      );
+      setShowSuccessPopup(true);
+      setTimeout(() => {
+        setShowSuccessPopup(false);
+      }, 3000);
+    } catch (error) {
+      console.error("Error creating/updating ticket:", error);
+      setApiError(
+        error.message || "Failed to create/update ticket. Please try again."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Remove the cleanup function from fetchTickets useEffect
+  useEffect(() => {
+    fetchTickets();
+  }, []); // This effect runs only once on mount
+
+  const handleSubmitDraft = async (draft) => {
+    try {
+      setIsSubmitting(true);
+
+      // Use the stored formData from the draft
+      const response = await fetch("/api/create-ticket", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          category_id: draft.formData.category_id,
+          ticket_type_id: draft.formData.ticket_type_id,
+          description: draft.description,
+          user_id: userLoginData.Id,
+          login: userLoginData.email,
+          password: userLoginData.password,
+          apiKey: userLoginData["api-Key"],
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to submit draft ticket");
+      }
+
+      // Remove from drafts
+      const updatedDrafts = draftTickets.filter((d) => d.id !== draft.id);
+      setDraftTickets(updatedDrafts);
+      localStorage.setItem("draftTickets", JSON.stringify(updatedDrafts));
+
+      // Show success message
+      setSuccessMessage("Draft ticket submitted successfully");
+      setShowSuccessPopup(true);
+
+      // Refresh tickets list
+      await fetchTickets();
+
+      setTimeout(() => {
+        setShowSuccessPopup(false);
+      }, 3000);
+    } catch (error) {
+      console.error("Error submitting draft:", error);
+      setApiError("Failed to submit draft ticket");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteDraft = (draftId) => {
+    try {
+      // Filter out the draft to be deleted
+      const updatedDrafts = draftTickets.filter(
+        (draft) => draft.id !== draftId
+      );
+
+      // Update state
+      setDraftTickets(updatedDrafts);
+
+      // Update localStorage
+      localStorage.setItem("draftTickets", JSON.stringify(updatedDrafts));
+
+      // Show success message
+      setSuccessMessage("Draft ticket deleted successfully");
+      setShowSuccessPopup(true);
+      setTimeout(() => {
+        setShowSuccessPopup(false);
+      }, 3000);
+    } catch (error) {
+      console.error("Error deleting draft:", error);
+      setApiError("Failed to delete draft ticket");
+    }
+  };
+
+  const handleEditDraft = (draft) => {
+    try {
+      // Set editing mode
+      setEditingTicket(draft);
+
+      // Show form
+      setShowForm(true);
+
+      // Pre-fill form with draft data
+      setValue("category", draft.category);
+      setValue("ticketType", draft.type);
+      setValue("description", draft.description);
+
+      if (draft.formData) {
+        // Set additional form data if it exists
+        Object.keys(draft.formData).forEach((key) => {
+          setValue(key, draft.formData[key]);
+        });
+
+        // Update API data
+        setApiData({
+          ...getDefaultFormData(),
+          ...draft.formData,
+        });
+
+        // Trigger category change to load correct ticket types
+        handleCategoryChange(draft.category);
+      }
+
+      // Scroll to form
+      setTimeout(() => {
+        document.querySelector(`.${styles.formContainer}`)?.scrollIntoView({
+          behavior: "smooth",
+        });
+      }, 100);
+    } catch (error) {
+      console.error("Error editing draft:", error);
+      setApiError("Failed to edit draft ticket");
+    }
   };
 
   return (
@@ -464,9 +682,10 @@ const TicketTable = () => {
             <div className={styles.messageIcon}>⚠️</div>
             <h3 className={styles.messageTitle}>Check-in Required</h3>
             <p className={styles.messageText}>
-              You need to be checked in to create a ticket. Please check in first using the attendance feature.
+              You need to be checked in to create a ticket. Please check in
+              first using the attendance feature.
             </p>
-            <button 
+            <button
               className={styles.messageCloseBtn}
               onClick={() => setShowCheckInMessage(false)}
             >
@@ -532,66 +751,129 @@ const TicketTable = () => {
       {/* Tickets Table */}
       <div className={styles.tableContainer}>
         <div className={styles.tableHeader}>
-          <h2 className={styles.tableTitle}>All Tickets</h2>
+          <h2 className={styles.tableTitle}>Tickets</h2>
+          <div className={styles.tabsContainer}>
+            <button
+              className={`${styles.tabButton} ${
+                activeTab === "sent" ? styles.activeTab : ""
+              }`}
+              onClick={() => setActiveTab("sent")}
+            >
+              Sent
+            </button>
+            <button
+              className={`${styles.tabButton} ${
+                activeTab === "draft" ? styles.activeTab : ""
+              }`}
+              onClick={() => setActiveTab("draft")}
+            >
+              Draft
+            </button>
+          </div>
         </div>
+
         <div className={styles.tableWrapper}>
-          <table className={styles.ticketTable}>
-            <thead>
-              <tr>
-                <th>Ticket Number</th>
-                <th>Title</th>
-                <th>Type</th>
-                <th>Risk Level</th>
-                <th>Created By</th>
-                <th>Stage</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {tickets.map((ticket) => (
-                <tr key={ticket.id} className={styles.tableRow}>
-                  <td>
-                    <a href="#" className={styles.ticketLink}>
-                      {ticket.id}
-                    </a>
-                  </td>
-                  <td className={styles.titleCell}>{ticket.title}</td>
-                  <td>{ticket.type}</td>
-                  <td>{ticket.riskLevel}</td>
-                  <td>{ticket.createdBy}</td>
-                  <td>
-                    <span
-                      className={`${styles.stageBadge} ${getStageClass(
-                        ticket.stage
-                      )}`}
-                    >
-                      {ticket.stage}
-                    </span>
-                  </td>
-                  <td>
-                    {ticket.status === "draft" ? (
-                      <>
+          {isLoading ? (
+            <div className={styles.loadingState}>Loading tickets...</div>
+          ) : apiError ? (
+            <div className={styles.errorMessage}>{apiError}</div>
+          ) : activeTab === "sent" ? (
+            // Sent tickets table
+            <table className={styles.ticketTable}>
+              <thead>
+                <tr>
+                  <th>Ticket ID</th>
+                  <th>Category</th>
+                  <th>Ticket Type</th>
+                  <th>Project</th>
+                  <th>Venue</th>
+                  <th>Created By</th>
+                  <th>Assigned User</th>
+                  <th>Stage</th>
+                </tr>
+              </thead>
+              <tbody>
+                {tickets.map((ticket) => (
+                  <tr key={ticket.id} className={styles.tableRow}>
+                    <td>
+                      <div className={styles.ticketId}>{ticket.id}</div>
+                    </td>
+                    <td>{ticket.category}</td>
+                    <td>{ticket.type}</td>
+                    <td>{ticket.project_id ? ticket.project_id[1] : "-"}</td>
+                    <td>{ticket.venue_id ? ticket.venue_id[1] : "-"}</td>
+                    <td>
+                      <div className={styles.userCell}>{ticket.createdBy}</div>
+                    </td>
+                    <td>
+                      <div className={styles.userCell}>
+                        <span className={styles.userIcon}>
+                          {ticket.assigned_user[1]?.charAt(0) || "A"}
+                        </span>
+                        {ticket.assigned_user[1] || "-"}
+                      </div>
+                    </td>
+                    <td>
+                      <span
+                        className={`${styles.stageBadge} ${getStageClass(
+                          ticket.stage
+                        )}`}
+                      >
+                        {ticket.stage}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            // Draft tickets table
+            <table className={styles.ticketTable}>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Category</th>
+                  <th>Type</th>
+                  <th>Description</th>
+                  <th>Created On</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {draftTickets.map((draft) => (
+                  <tr key={draft.id}>
+                    <td>{draft.id}</td>
+                    <td>{draft.category}</td>
+                    <td>{draft.type}</td>
+                    <td>{draft.description}</td>
+                    <td>{new Date(draft.created_at).toLocaleDateString()}</td>
+                    <td>
+                      <div className={styles.actionButtons}>
                         <button
-                          onClick={() => handleEditTicket(ticket)}
-                          className={`${styles.actionBtn} ${styles.editBtn}`}
+                          className={styles.editButton}
+                          onClick={() => handleEditDraft(draft)}
                         >
                           Edit
                         </button>
                         <button
-                          onClick={() => handleDeleteTicket(ticket.id)}
-                          className={`${styles.actionBtn} ${styles.deleteBtn}`}
+                          className={styles.submitButton}
+                          onClick={() => handleSubmitDraft(draft)}
+                        >
+                          Submit
+                        </button>
+                        <button
+                          className={styles.deleteButton}
+                          onClick={() => handleDeleteDraft(draft.id)}
                         >
                           Delete
                         </button>
-                      </>
-                    ) : (
-                      <span className={styles.submittedText}>Submitted</span>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
 
@@ -629,7 +911,7 @@ const TicketTable = () => {
                     className={styles.formInput}
                     {...register("ticketType", {
                       required: "Ticket type is required",
-                      onChange: (e) => handleTicketTypeChange(e.target.value)
+                      onChange: (e) => handleTicketTypeChange(e.target.value),
                     })}
                   >
                     <option value="">Select Ticket Type</option>
@@ -652,7 +934,7 @@ const TicketTable = () => {
                   <input
                     type="text"
                     className={`${styles.formInput} ${styles.readOnlyInput}`}
-                    value={apiData.project}
+                    value={projectName}
                   />
                 </div>
 
@@ -661,17 +943,7 @@ const TicketTable = () => {
                   <input
                     type="text"
                     className={`${styles.formInput} ${styles.readOnlyInput}`}
-                    value={apiData.venue}
-                  />
-                </div>
-
-                <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>Number</label>
-                  <input
-                    type="number"
-                    className={styles.formInput}
-                    {...register("number")}
-                    placeholder="Enter number"
+                    value={userVenue}
                   />
                 </div>
 
@@ -713,7 +985,7 @@ const TicketTable = () => {
                   <input
                     type="text"
                     className={`${styles.formInput} ${styles.readOnlyInput}`}
-                    value={apiData.createdBy}
+                    value={userName}
                   />
                 </div>
 
@@ -728,7 +1000,9 @@ const TicketTable = () => {
                 </div>
 
                 <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>Expected Resolution Time (hours)</label>
+                  <label className={styles.formLabel}>
+                    Expected Resolution Time (hours)
+                  </label>
                   <input
                     type="text"
                     className={`${styles.formInput} ${styles.readOnlyInput}`}
@@ -738,12 +1012,14 @@ const TicketTable = () => {
                 </div>
 
                 <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>Number of Systems Affected</label>
+                  <label className={styles.formLabel}>
+                    Number of Systems Affected
+                  </label>
                   <input
-                    type="text"
-                    className={`${styles.formInput} ${styles.readOnlyInput}`}
-                    value={apiData.noOfSystemAffected ? "Yes" : "No"}
-                    readOnly
+                    type="number"
+                    className={styles.formInput}
+                    {...register("noOfSystemAffected")}
+                    placeholder="Enter number of systems affected"
                   />
                 </div>
               </div>
@@ -760,8 +1036,16 @@ const TicketTable = () => {
               </div>
 
               <div className={styles.formActions} style={{ marginTop: "20px" }}>
-                <button type="submit" className={styles.generateBtn}>
-                  {editingTicket ? "Update Ticket" : "Submit Ticket"}
+                <button
+                  type="submit"
+                  className={styles.generateBtn}
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting
+                    ? "Creating..."
+                    : editingTicket
+                    ? "Update Ticket"
+                    : "Submit Ticket"}
                 </button>
 
                 {!editingTicket && (
@@ -793,6 +1077,7 @@ const TicketTable = () => {
           </div>
         </div>
       )}
+      {showSuccessPopup && <SuccessPopup message={successMessage} />}
     </div>
   );
 };

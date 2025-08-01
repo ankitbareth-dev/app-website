@@ -1,25 +1,77 @@
 import { createContext, useContext, useReducer, useEffect } from "react";
 import { getAccurateTime } from "../services/timeService";
 
-const getAssignedCoordinates = () => {
+const getAssignedCoordinates = async () => {
   try {
-    const loginData = localStorage.getItem("loginData");
-    if (!loginData) {
-      console.warn("No login data found in localStorage");
-      return null;
+    const loginData = JSON.parse(localStorage.getItem("loginData"));
+    
+    const response = await fetch('/api/get-coordinates', {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "hr.employee",
+        id: loginData.employeeId,
+        db: "eduquity",
+        login: loginData.email,
+        password: loginData.password,
+        apiKey: loginData["api-Key"]
+      })
+    });
+
+    const data = await response.json();
+    
+    if (data.records && data.records.length > 0) {
+      const apiRecord = data.records[0];
+      const apiLatitude = parseFloat(apiRecord.employee_latitude);
+      const apiLongitude = parseFloat(apiRecord.employee_longitude);
+      const apiActiveProject = apiRecord.active_project;
+      const apiActiveVenue = apiRecord.active_venue;
+
+      // Compare with current localStorage values
+      const currentLatitude = parseFloat(loginData.employee_latitude);
+      const currentLongitude = parseFloat(loginData.employee_longitude);
+      const currentActiveProject = loginData.employee_assigned_project;
+      const currentActiveVenue = loginData.employee_assigned_venue;
+
+      let needsUpdate = false;
+
+      // Check if coordinates are different
+      if (apiLatitude !== currentLatitude || apiLongitude !== currentLongitude) {
+        console.log("📍 Coordinates updated from API");
+        loginData.employee_latitude = apiLatitude;
+        loginData.employee_longitude = apiLongitude;
+        needsUpdate = true;
+      }
+
+      // Check if active project is different
+      if (JSON.stringify(apiActiveProject) !== JSON.stringify(currentActiveProject)) {
+        console.log("🏢 Active project updated from API");
+        loginData.employee_assigned_project = apiActiveProject;
+        needsUpdate = true;
+      }
+
+      // Check if active venue is different
+      if (JSON.stringify(apiActiveVenue) !== JSON.stringify(currentActiveVenue)) {
+        console.log("🏪 Active venue updated from API");
+        loginData.employee_assigned_venue = apiActiveVenue;
+        needsUpdate = true;
+      }
+
+      // Update localStorage if any changes were made
+      if (needsUpdate) {
+        localStorage.setItem("loginData", JSON.stringify(loginData));
+        console.log("💾 LoginData updated in localStorage");
+      }
+
+      return {
+        latitude: apiLatitude,
+        longitude: apiLongitude,
+      };
     }
-
-    const userLoginData = JSON.parse(loginData);
-
-    if (!userLoginData.employee_latitude || !userLoginData.employee_longitude) {
-      console.warn("Employee coordinates not found in login data");
-      return null;
-    }
-
-    return {
-      latitude: parseFloat(userLoginData.employee_latitude),
-      longitude: parseFloat(userLoginData.employee_longitude),
-    };
+    
+    return null;
   } catch (error) {
     console.error("Error getting assigned coordinates:", error);
     return null;
@@ -42,8 +94,8 @@ const calculateDistance = (lat1, lon1, lat2, lon2) => {
 
   return R * c; // Distance in meters
 };
-const isWithinAllowedLocation = (userLat, userLon) => {
-  const assignedCoords = getAssignedCoordinates();
+const isWithinAllowedLocation = async (userLat, userLon) => {
+  const assignedCoords = await getAssignedCoordinates();
 
   if (!assignedCoords) {
     console.warn("No assigned coordinates available, allowing check-in/out");
@@ -813,7 +865,7 @@ export const AppProvider = ({ children }) => {
   ) => {
     try {
       // ✅ Step 1: Get assigned coordinates safely
-      const assignedCoords = getAssignedCoordinates();
+      const assignedCoords = await getAssignedCoordinates();
       if (!assignedCoords) {
         throw new Error(
           "Employee location coordinates not configured. Please contact administrator."
@@ -823,7 +875,7 @@ export const AppProvider = ({ children }) => {
       // ✅ Step 2: Verify location if coordinates are provided
       if (coordinates) {
         const { latitude, longitude } = coordinates;
-        if (!isWithinAllowedLocation(latitude, longitude)) {
+        if (!(await isWithinAllowedLocation(latitude, longitude))) {
           const distance = calculateDistance(
             latitude,
             longitude,
@@ -934,7 +986,7 @@ export const AppProvider = ({ children }) => {
   const checkOut = async (coordinates = null) => {
     try {
       // ✅ Step 1: Get assigned coordinates safely
-      const assignedCoords = getAssignedCoordinates();
+      const assignedCoords = await getAssignedCoordinates();
       if (!assignedCoords) {
         throw new Error(
           "Employee location coordinates not configured. Please contact administrator."
@@ -944,7 +996,7 @@ export const AppProvider = ({ children }) => {
       // ✅ Step 2: Verify location if coordinates are provided
       if (coordinates) {
         const { latitude, longitude } = coordinates;
-        if (!isWithinAllowedLocation(latitude, longitude)) {
+        if (!(await isWithinAllowedLocation(latitude, longitude))) {
           const distance = calculateDistance(
             latitude,
             longitude,
