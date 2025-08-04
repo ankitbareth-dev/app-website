@@ -7,20 +7,19 @@ const PORT = 3001;
 
 app.use(
   cors({
-    origin: "*", // ✅ Your frontend URL
-    credentials: false,
+    origin: "*",
+    methods: "GET,POST,PUT,DELETE,OPTIONS",
+    allowedHeaders: "Content-Type,Authorization,login,password,api-key",
   })
 );
 app.use(express.json());
 
-// Login endpoint - handles /odoo_connect
 app.post("/api/login", async (req, res) => {
   try {
-    const { db, login, password } = req.body;
+    const { db, login, password, apiDomain } = req.body;
 
-    const response = await axios({
-      method: "get",
-      url: `http://3.109.255.36/odoo_connect?db=${db}`,
+    const response = await fetch(`http://${apiDomain}/odoo_connect`, {
+      method: "GET",
       headers: {
         login,
         password,
@@ -29,37 +28,31 @@ app.post("/api/login", async (req, res) => {
       },
     });
 
-    res.status(200).json(response.data);
+    // handle non-200 responses
+    if (!response.ok) {
+      const errorData = await response.text(); // can be .json() if known to be JSON
+      throw new Error(`Server responded with ${response.status}: ${errorData}`);
+    }
+
+    const data = await response.json();
+    res.status(200).json(data);
   } catch (error) {
     console.error("❌ Login error:", error.message);
     res.status(500).json({
       error: "Login failed",
-      status: error.response?.status,
-      details: error.response?.data || error.message,
+      message: error.message,
     });
   }
-  /* const mockResponse = {
-    Status: "auth successful",
-    User: "Administrator",
-    "api-key": "13985aa4-d760-468c-a5f4-45b96c341bd5",
-    employee_id: 101,
-  };
-
-  // Optional: simulate a short delay
-  await new Promise((resolve) => setTimeout(resolve, 500));
-
-  // Send the mock response
-  res.status(200).json(mockResponse); */
 });
 
 // Profile endpoint - handles /send_request
 app.post("/api/get-coordinates", async (req, res) => {
   try {
-    const { model, id, db, login, password, apiKey } = req.body;
+    const { model, id, db, login, password, apiKey, apiDomain } = req.body;
 
     const response = await axios({
       method: "get",
-      url: `http://3.109.255.36/send_request?model=${model}&Id=${id}&db=${db}`,
+      url: `http://${apiDomain}/send_request?model=${model}&Id=${id}&db=${db}`,
       headers: {
         login,
         password,
@@ -127,16 +120,8 @@ app.post("/api/profile", async (req, res) => {
 
 app.post("/api/check-in", async (req, res) => {
   try {
-    const { model, db, login, password, apiKey, fields, values } = req.body;
-    console.log("🔍 Attendance check-in request:", {
-      model,
-      db,
-      fields,
-      values,
-      login,
-      password,
-      apiKey,
-    });
+    const { model, db, login, apiDomain, password, apiKey, fields, values } =
+      req.body;
 
     const requestData = {
       fields,
@@ -145,7 +130,7 @@ app.post("/api/check-in", async (req, res) => {
 
     const response = await axios({
       method: "post",
-      url: `http://3.109.255.36/send_request?model=${model}&db=${db}`,
+      url: `http://${apiDomain}/send_request?model=${model}&db=${db}`,
       headers: {
         login,
         password,
@@ -218,7 +203,17 @@ app.post("/api/attendance/verify", async (req, res) => {
 // New endpoint for attendance check-out - converts PUT to PUT (keeping existing logic)
 app.put("/api/attendance/checkout", async (req, res) => {
   try {
-    const { model, id, db, fields, values, login, password, apiKey } = req.body;
+    const {
+      model,
+      id,
+      db,
+      fields,
+      values,
+      login,
+      password,
+      apiKey,
+      apiDomain,
+    } = req.body;
     console.log("🔍 Attendance checkout request:", {
       model,
       id,
@@ -237,7 +232,7 @@ app.put("/api/attendance/checkout", async (req, res) => {
 
     const response = await axios({
       method: "put",
-      url: `http://3.109.255.36/send_request?model=${model}&Id=${id}&db=${db}`,
+      url: `http://${apiDomain}/send_request?model=${model}&Id=${id}&db=${db}`,
       headers: {
         login,
         password,
@@ -299,7 +294,7 @@ app.put("/api/logout", async (req, res) => {
 
     const response = await axios({
       method: "put",
-      url: `http://3.109.255.36/send_request?model=${model}&Id=${id}&db=${db}`,
+      url: `http://140.245.30.123:8069/send_request?model=${model}&Id=${id}`,
       headers: {
         login,
         password,

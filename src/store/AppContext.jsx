@@ -4,8 +4,10 @@ import { getAccurateTime } from "../services/timeService";
 const getAssignedCoordinates = async () => {
   try {
     const loginData = JSON.parse(localStorage.getItem("loginData"));
-    
-    const response = await fetch('/api/get-coordinates', {
+    const apiDomain = localStorage.getItem("apiDomain");
+    const dbName = localStorage.getItem("dbName");
+
+    const response = await fetch("/api/get-coordinates", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -13,15 +15,16 @@ const getAssignedCoordinates = async () => {
       body: JSON.stringify({
         model: "hr.employee",
         id: loginData.employeeId,
-        db: "eduquity",
+        db: dbName,
+        apiDomain,
         login: loginData.email,
         password: loginData.password,
-        apiKey: loginData["api-Key"]
-      })
+        apiKey: loginData["api-Key"],
+      }),
     });
 
     const data = await response.json();
-    
+
     if (data.records && data.records.length > 0) {
       const apiRecord = data.records[0];
       const apiLatitude = parseFloat(apiRecord.employee_latitude);
@@ -38,7 +41,10 @@ const getAssignedCoordinates = async () => {
       let needsUpdate = false;
 
       // Check if coordinates are different
-      if (apiLatitude !== currentLatitude || apiLongitude !== currentLongitude) {
+      if (
+        apiLatitude !== currentLatitude ||
+        apiLongitude !== currentLongitude
+      ) {
         console.log("📍 Coordinates updated from API");
         loginData.employee_latitude = apiLatitude;
         loginData.employee_longitude = apiLongitude;
@@ -46,14 +52,19 @@ const getAssignedCoordinates = async () => {
       }
 
       // Check if active project is different
-      if (JSON.stringify(apiActiveProject) !== JSON.stringify(currentActiveProject)) {
+      if (
+        JSON.stringify(apiActiveProject) !==
+        JSON.stringify(currentActiveProject)
+      ) {
         console.log("🏢 Active project updated from API");
         loginData.employee_assigned_project = apiActiveProject;
         needsUpdate = true;
       }
 
       // Check if active venue is different
-      if (JSON.stringify(apiActiveVenue) !== JSON.stringify(currentActiveVenue)) {
+      if (
+        JSON.stringify(apiActiveVenue) !== JSON.stringify(currentActiveVenue)
+      ) {
         console.log("🏪 Active venue updated from API");
         loginData.employee_assigned_venue = apiActiveVenue;
         needsUpdate = true;
@@ -70,7 +81,7 @@ const getAssignedCoordinates = async () => {
         longitude: apiLongitude,
       };
     }
-    
+
     return null;
   } catch (error) {
     console.error("Error getting assigned coordinates:", error);
@@ -825,7 +836,6 @@ export const AppProvider = ({ children }) => {
       const responseData = await response.json();
       console.log("Logout response:", responseData);
 
-      // Check if the response has the expected structure and log_in is "0"
       if (
         responseData["Updated resource"] &&
         Array.isArray(responseData["Updated resource"]) &&
@@ -833,12 +843,23 @@ export const AppProvider = ({ children }) => {
       ) {
         const updatedResource = responseData["Updated resource"][0];
 
-        // Check if log_in is "0" (string) or 0 (number)
         if (updatedResource.log_in === "0" || updatedResource.log_in === 0) {
-          console.log(
-            "✅ Logout successful, clearing localStorage and dispatching logout action"
-          );
+          console.log("✅ Logout successful");
+
+          // Save items we want to keep
+          const apiDomain = localStorage.getItem("apiDomain");
+          const dbName = localStorage.getItem("dbName");
+          const checkInStatus = localStorage.getItem("checkInStatus");
+
+          // Clear localStorage
           localStorage.clear();
+
+          // Restore saved items
+          if (apiDomain) localStorage.setItem("apiDomain", apiDomain);
+          if (dbName) localStorage.setItem("dbName", dbName);
+          if (checkInStatus)
+            localStorage.setItem("checkInStatus", checkInStatus);
+
           dispatch({
             type: ActionTypes.LOGOUT,
           });
@@ -912,6 +933,9 @@ export const AppProvider = ({ children }) => {
         throw new Error("Invalid login credentials. Please login again.");
       }
 
+      const apiDomain = localStorage.getItem("apiDomain");
+      const dbName = localStorage.getItem("dbName");
+
       // ✅ Step 5: Send check-in request to server
       const response = await fetch("/api/check-in", {
         method: "POST",
@@ -936,7 +960,8 @@ export const AppProvider = ({ children }) => {
             in_longitude: coordinates?.longitude || null,
             in_city: "Ahmedabad",
           },
-          db: "eduquity",
+          db: dbName,
+          apiDomain,
           model: "hr.attendance",
         }),
       });
@@ -1061,6 +1086,9 @@ export const AppProvider = ({ children }) => {
         },
       };
 
+      const apiDomain = localStorage.getItem("apiDomain");
+      const dbName = localStorage.getItem("dbName");
+
       // ✅ Step 7: Send PUT request to update attendance record
       const response = await fetch(`/api/attendance/checkout`, {
         method: "PUT",
@@ -1072,7 +1100,8 @@ export const AppProvider = ({ children }) => {
           login: userLoginData.email,
           password: userLoginData.password,
           apiKey: userLoginData["api-Key"],
-          db: "eduquity",
+          db: dbName,
+          apiDomain,
           model: "hr.attendance",
           id: checkInId,
           ...checkOutData,
