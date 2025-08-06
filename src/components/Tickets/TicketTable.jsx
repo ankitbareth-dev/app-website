@@ -225,7 +225,7 @@ const TicketTable = () => {
     }
   };
 
-  const getStageClass = (stage) => {
+  /* const getStageClass = (stage) => {
     switch (stage.toLowerCase()) {
       case "draft":
         return styles.stageDraft;
@@ -238,7 +238,7 @@ const TicketTable = () => {
       default:
         return styles.stageDefault;
     }
-  };
+  }; */
 
   const getDefaultFormData = () => {
     return {
@@ -281,7 +281,11 @@ const TicketTable = () => {
       setIsLoading(true);
       setApiError("");
 
-      const response = await fetch("/api/get-tickets", {
+      const apiDomain = localStorage.getItem("apiDomain");
+      const dbName = localStorage.getItem("dbName");
+      console.log(apiDomain, dbName);
+
+      const response = await fetch("/api/get-created-tickets", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -290,6 +294,8 @@ const TicketTable = () => {
           login: userLoginData.email,
           password: userLoginData.password,
           apiKey: userLoginData["api-Key"],
+          db: dbName,
+          apiDomain,
         }),
       });
       if (!response.ok) {
@@ -312,6 +318,7 @@ const TicketTable = () => {
       setIsLoading(false);
     }
   };
+  console.log(tickets);
 
   // Add these new functions
 
@@ -345,10 +352,8 @@ const TicketTable = () => {
   };
 
   const handleGenerateTicket = async () => {
-    // Check if user is checked in before allowing ticket creation
     if (!isCheckedIn) {
       setShowCheckInMessage(true);
-      // Auto-hide message after 5 seconds
       setTimeout(() => setShowCheckInMessage(false), 5000);
       return;
     }
@@ -357,108 +362,74 @@ const TicketTable = () => {
       setIsLoading(true);
 
       try {
-        // Check if data already exists in localStorage
-        const storedTicketTypes = localStorage.getItem("ticketTypes");
-        const storedCategories = localStorage.getItem("ticketCategories");
+        const userLoginData = JSON.parse(localStorage.getItem("loginData"));
 
-        if (storedTicketTypes && storedCategories) {
-          // Data exists in localStorage, use it instead of calling API
-          console.log("Using existing data from localStorage");
+        const body = JSON.stringify({
+          db: localStorage.getItem("dbName"),
+          login: userLoginData.email,
+          password: userLoginData.password,
+          apiKey: userLoginData["api-Key"],
+          apiDomain: localStorage.getItem("apiDomain"), // Needed for backend
+        });
 
-          const parsedTicketTypes = JSON.parse(storedTicketTypes);
-
-          // Set the ticket types if not already set
-          if (allTicketTypes.length === 0) {
-            setAllTicketTypes(parsedTicketTypes);
-          }
-
-          // Set categories if not already set
-          if (categories.length === 0) {
-            const categoryNames = parsedTicketTypes
-              .filter((record) => Array.isArray(record.category_id))
-              .map((record) => record.category_id[1])
-              .filter(
-                (name) => name && typeof name === "string" && name.trim() !== ""
-              )
-              .filter((name, index, arr) => arr.indexOf(name) === index);
-
-            const formattedCategories = categoryNames.map((name, index) => ({
-              id: index + 1,
-              complete_name: name,
-            }));
-
-            setCategories(formattedCategories);
-          }
-
-          // Use default form data since we have the necessary dropdown data
-          setApiData(getDefaultFormData());
-          setShowForm(true);
-        } else {
-          // Data doesn't exist, call API
-          console.log("Data not found in localStorage, calling API");
-
-          const requestData = {
-            model: "helpdesk.ticket.type",
-            db: "eduquity",
-            login: "aditya@gmail.com",
-            password: "1234",
-            apiKey: "13985aa4-d760-468c-a5f4-45b96c341bd5",
-          };
-
-          const ticketTypesResponse = await fetch("/api/tickets", {
+        const [ticketTypesRes, categoriesRes] = await Promise.all([
+          fetch("/api/get-tickets", {
             method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              model: "helpdesk.ticket.type",
-              db: "eduquity",
-              login: requestData.login,
-              password: requestData.password,
-              apiKey: requestData.apiKey,
-            }),
-          });
+            headers: { "Content-Type": "application/json" },
+            body,
+          }),
+          fetch("/api/get-categories", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body,
+          }),
+        ]);
 
-          if (!ticketTypesResponse.ok) {
-            throw new Error("Failed to fetch ticket types");
-          }
-
-          const ticketTypesData = await ticketTypesResponse.json();
-          console.log("Ticket Types from API:", ticketTypesData);
-
-          if (ticketTypesData && ticketTypesData.records) {
-            // Save all ticket types to localStorage
-            localStorage.setItem(
-              "ticketTypes",
-              JSON.stringify(ticketTypesData.records)
-            );
-            setAllTicketTypes(ticketTypesData.records);
-
-            // Extract categories from ticket types data
-            const categoryNames = ticketTypesData.records
-              .filter((record) => Array.isArray(record.category_id))
-              .map((record) => record.category_id[1])
-              .filter(
-                (name) => name && typeof name === "string" && name.trim() !== ""
-              )
-              .filter((name, index, arr) => arr.indexOf(name) === index);
-
-            const formattedCategories = categoryNames.map((name, index) => ({
-              id: index + 1,
-              complete_name: name,
-            }));
-
-            // Save categories to localStorage and update state
-            localStorage.setItem(
-              "ticketCategories",
-              JSON.stringify(ticketTypesData.records)
-            );
-            setCategories(formattedCategories);
-          }
-
-          setApiData(ticketTypesData || getDefaultFormData());
-          setShowForm(true);
+        if (!ticketTypesRes.ok || !categoriesRes.ok) {
+          throw new Error("Failed to fetch ticket types or categories");
         }
+
+        const responses = await Promise.all([
+          ticketTypesRes.json(),
+          categoriesRes.json(),
+        ]);
+
+        const [ticketTypesData, categoriesData] = responses;
+
+        if (ticketTypesData?.records) {
+          // Store ticket types
+          localStorage.setItem(
+            "ticketTypes",
+            JSON.stringify(ticketTypesData.records)
+          );
+          setAllTicketTypes(ticketTypesData.records);
+
+          // Extract and store categories
+          const categoryNames = ticketTypesData.records
+            .filter((record) => Array.isArray(record.category_id))
+            .map((record) => record.category_id[1])
+            .filter(
+              (name) => name && typeof name === "string" && name.trim() !== ""
+            )
+            .filter((name, index, arr) => arr.indexOf(name) === index);
+
+          const formattedCategories = categoryNames.map((name, index) => ({
+            id: index + 1,
+            complete_name: name,
+          }));
+
+          // Save both to localStorage
+          localStorage.setItem(
+            "ticketCategories",
+            JSON.stringify(ticketTypesData.records)
+          );
+          localStorage.setItem("categories", JSON.stringify(categoriesData));
+
+          setCategories(formattedCategories);
+        }
+
+        setApiData(ticketTypesData || getDefaultFormData());
+        setShowForm(true);
 
         // Scroll to form after it appears
         setTimeout(() => {
@@ -467,8 +438,7 @@ const TicketTable = () => {
           });
         }, 100);
       } catch (error) {
-        console.error("Error creating ticket:", error);
-        // Fallback to default data if API fails
+        console.error("❌ Error creating ticket:", error);
         setApiData(getDefaultFormData());
         setShowForm(true);
       } finally {
@@ -489,6 +459,9 @@ const TicketTable = () => {
         throw new Error("Please select a valid ticket type");
       }
 
+      const apiDomain = localStorage.getItem("apiDomain");
+      const dbName = localStorage.getItem("dbName");
+
       const ticketData = {
         category_id: selectedTicketType.category_id[0],
         ticket_type_id: selectedTicketType.id,
@@ -497,6 +470,8 @@ const TicketTable = () => {
         login: userLoginData.email,
         password: userLoginData.password,
         apiKey: userLoginData["api-Key"],
+        db: dbName,
+        apiDomain,
       };
 
       const response = await fetch("/api/create-ticket", {
@@ -803,25 +778,12 @@ const TicketTable = () => {
                     <td>{ticket.project_id ? ticket.project_id[1] : "-"}</td>
                     <td>{ticket.venue_id ? ticket.venue_id[1] : "-"}</td>
                     <td>
-                      <div className={styles.userCell}>{ticket.createdBy}</div>
+                      <div className={styles.userCell}>{userName}</div>
                     </td>
                     <td>
-                      <div className={styles.userCell}>
-                        <span className={styles.userIcon}>
-                          {ticket.assigned_user[1]?.charAt(0) || "A"}
-                        </span>
-                        {ticket.assigned_user[1] || "-"}
-                      </div>
+                      <div className={styles.userCell}>{userName}</div>
                     </td>
-                    <td>
-                      <span
-                        className={`${styles.stageBadge} ${getStageClass(
-                          ticket.stage
-                        )}`}
-                      >
-                        {ticket.stage}
-                      </span>
-                    </td>
+                    <td>{ticket.stage}</td>
                   </tr>
                 ))}
               </tbody>

@@ -136,7 +136,7 @@ const Dashboard = () => {
   /* const metrics = getDashboardMetrics(); */
   /* const recentActivities = getRecentActivities(); */
 
-  const handleRefresh = async () => {
+  /* const handleRefresh = async () => {
     const loginData = localStorage.getItem("loginData");
     if (loginData) {
       const userLoginData = JSON.parse(loginData);
@@ -235,7 +235,7 @@ const Dashboard = () => {
       }
     }
     window.location.reload();
-  };
+  }; */
 
   return (
     <div className={styles.dashboardContainer}>
@@ -454,7 +454,7 @@ const Dashboard = () => {
               <h3>View Reports</h3>
               <p>Coming Soon</p>
             </a>
-            <button
+            {/*  <button
               className={`${styles.quickActionCard} ${styles.refreshCard}`}
               onClick={handleRefresh}
             >
@@ -478,7 +478,7 @@ const Dashboard = () => {
               </div>
               <h3>Refresh</h3>
               <p>Refresh The App</p>
-            </button>
+            </button> */}
           </div>
         </div>
       </main>

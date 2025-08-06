@@ -889,7 +889,7 @@ export const AppProvider = ({ children }) => {
       const assignedCoords = await getAssignedCoordinates();
       if (!assignedCoords) {
         throw new Error(
-          "Employee location coordinates not configured. Please contact administrator."
+          "Please contact administrator or check your internet connection."
         );
       }
 
@@ -1014,7 +1014,7 @@ export const AppProvider = ({ children }) => {
       const assignedCoords = await getAssignedCoordinates();
       if (!assignedCoords) {
         throw new Error(
-          "Employee location coordinates not configured. Please contact administrator."
+          "Please contact administrator or check your internet connection."
         );
       }
 

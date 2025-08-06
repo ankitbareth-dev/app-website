@@ -33,12 +33,8 @@ const Profile = () => {
         department: parsed.employee_department || "N/A",
         position: parsed.employee_post || "N/A",
         joinDate: "20 May 2025",
-        latitude:
-          parsed.employee_latitude === 0 ? 23.136091 : parsed.employee_latitude,
-        longitude:
-          parsed.employee_longitude === 0
-            ? 72.552124
-            : parsed.employee_longitude,
+        latitude: parsed.employee_latitude || "N/A",
+        longitude: parsed.employee_longitude || "N/A",
         employeeId: parsed.employeeId || "",
         assigned_project: parsed.employee_assigned_project[1] || "N/A",
         assigned_venue: parsed.employee_assigned_venue[1] || "N/A",
