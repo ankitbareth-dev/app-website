@@ -373,6 +373,15 @@ app.post("/api/create-ticket", async (req, res) => {
         "api-key": apiKey,
         "Content-Type": "application/json",
       },
+      data: {
+        fields: ["category_id", "ticket_type_id", "description", "user_id"],
+        values: {
+          category_id,
+          ticket_type_id,
+          description,
+          user_id,
+        },
+      },
     });
 
     console.log("✅ Create ticket response:", response.data);

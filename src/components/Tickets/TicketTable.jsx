@@ -15,28 +15,28 @@ const TicketTable = () => {
   const [apiData, setApiData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [categories, setCategories] = useState([]);
-  const [allTicketTypes, setAllTicketTypes] = useState([]); // Store all ticket types
+  const [allTicketTypes, setAllTicketTypes] = useState([]);
   const [apiError, setApiError] = useState("");
-  const [filteredTicketTypes, setFilteredTicketTypes] = useState([]); // Store filtered ticket types
+  const [filteredTicketTypes, setFilteredTicketTypes] = useState([]);
   const [showCheckInMessage, setShowCheckInMessage] = useState(false);
-  // Add near other state declarations
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
-
+  const [isFetchingTickets, setIsFetchingTickets] = useState(true);
+  const [visibleTickets, setVisibleTickets] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const TICKETS_PER_PAGE = 10;
   const [activeTab, setActiveTab] = useState("sent");
   const [draftTickets, setDraftTickets] = useState([]);
-
   const [editingTicket, setEditingTicket] = useState(null);
   const [tickets, setTickets] = useState([]);
-
   const [stats, setStats] = useState({
     total: 0,
     inProgress: 0,
     done: 0,
     sent: 0,
+    unresolved: 0,
   });
-
   const {
     register,
     handleSubmit,
@@ -65,6 +65,192 @@ const TicketTable = () => {
     }
   }, []);
 
+  //get dummy data
+  const getDummyTickets = () => {
+    return [
+      {
+        id: "HT00001",
+        category: "IT Support",
+        type: "Hardware Issue",
+        project_id: ["1", "Project Alpha"],
+        venue_id: ["1", "Main Office"],
+        createdBy: "John Doe",
+        assigned_user: ["1", "Support Team"],
+        stage: "In Progress",
+        create_date: new Date().toISOString(),
+        status: "active",
+      },
+      {
+        id: "HT00002",
+        category: "Software",
+        type: "Bug Report",
+        project_id: ["2", "Project Beta"],
+        venue_id: ["1", "Main Office"],
+        createdBy: "Jane Smith",
+        assigned_user: ["2", "Dev Team"],
+        stage: "New",
+        create_date: new Date().toISOString(),
+        status: "active",
+      },
+      {
+        id: "HT00003",
+        category: "IT Support",
+        type: "Hardware Issue",
+        project_id: ["1", "Project Alpha"],
+        venue_id: ["1", "Main Office"],
+        createdBy: "John Doe",
+        assigned_user: ["1", "Support Team"],
+        stage: "In Progress",
+        create_date: new Date().toISOString(),
+        status: "active",
+      },
+      {
+        id: "HT00004",
+        category: "IT Support",
+        type: "Hardware Issue",
+        project_id: ["1", "Project Alpha"],
+        venue_id: ["1", "Main Office"],
+        createdBy: "John Doe",
+        assigned_user: ["1", "Support Team"],
+        stage: "In Progress",
+        create_date: new Date().toISOString(),
+        status: "active",
+      },
+      {
+        id: "HT00005",
+        category: "IT Support",
+        type: "Hardware Issue",
+        project_id: ["1", "Project Alpha"],
+        venue_id: ["1", "Main Office"],
+        createdBy: "John Doe",
+        assigned_user: ["1", "Support Team"],
+        stage: "In Progress",
+        create_date: new Date().toISOString(),
+        status: "active",
+      },
+      {
+        id: "HT00006",
+        category: "IT Support",
+        type: "Hardware Issue",
+        project_id: ["1", "Project Alpha"],
+        venue_id: ["1", "Main Office"],
+        createdBy: "John Doe",
+        assigned_user: ["1", "Support Team"],
+        stage: "In Progress",
+        create_date: new Date().toISOString(),
+        status: "active",
+      },
+      {
+        id: "HT00007",
+        category: "IT Support",
+        type: "Hardware Issue",
+        project_id: ["1", "Project Alpha"],
+        venue_id: ["1", "Main Office"],
+        createdBy: "John Doe",
+        assigned_user: ["1", "Support Team"],
+        stage: "In Progress",
+        create_date: new Date().toISOString(),
+        status: "active",
+      },
+      {
+        id: "HT00008",
+        category: "IT Support",
+        type: "Hardware Issue",
+        project_id: ["1", "Project Alpha"],
+        venue_id: ["1", "Main Office"],
+        createdBy: "John Doe",
+        assigned_user: ["1", "Support Team"],
+        stage: "In Progress",
+        create_date: new Date().toISOString(),
+        status: "active",
+      },
+      {
+        id: "HT00009",
+        category: "IT Support",
+        type: "Hardware Issue",
+        project_id: ["1", "Project Alpha"],
+        venue_id: ["1", "Main Office"],
+        createdBy: "John Doe",
+        assigned_user: ["1", "Support Team"],
+        stage: "In Progress",
+        create_date: new Date().toISOString(),
+        status: "active",
+      },
+      {
+        id: "HT00010",
+        category: "IT Support",
+        type: "Hardware Issue",
+        project_id: ["1", "Project Alpha"],
+        venue_id: ["1", "Main Office"],
+        createdBy: "John Doe",
+        assigned_user: ["1", "Support Team"],
+        stage: "In Progress",
+        create_date: new Date().toISOString(),
+        status: "active",
+      },
+      {
+        id: "HT00011",
+        category: "IT Support",
+        type: "Hardware Issue",
+        project_id: ["1", "Project Alpha"],
+        venue_id: ["1", "Main Office"],
+        createdBy: "John Doe",
+        assigned_user: ["1", "Support Team"],
+        stage: "In Progress",
+        create_date: new Date().toISOString(),
+        status: "active",
+      },
+      {
+        id: "HT00012",
+        category: "IT Support",
+        type: "Hardware Issue",
+        project_id: ["1", "Project Alpha"],
+        venue_id: ["1", "Main Office"],
+        createdBy: "John Doe",
+        assigned_user: ["1", "Support Team"],
+        stage: "In Progress",
+        create_date: new Date().toISOString(),
+        status: "active",
+      },
+      {
+        id: "HT00013",
+        category: "IT Support",
+        type: "Hardware Issue",
+        project_id: ["1", "Project Alpha"],
+        venue_id: ["1", "Main Office"],
+        createdBy: "John Doe",
+        assigned_user: ["1", "Support Team"],
+        stage: "In Progress",
+        create_date: new Date().toISOString(),
+        status: "active",
+      },
+      {
+        id: "HT00014",
+        category: "IT Support",
+        type: "Hardware Issue",
+        project_id: ["1", "Project Alpha"],
+        venue_id: ["1", "Main Office"],
+        createdBy: "John Doe",
+        assigned_user: ["1", "Support Team"],
+        stage: "In Progress",
+        create_date: new Date().toISOString(),
+        status: "active",
+      },
+      {
+        id: "HT00015",
+        category: "IT Support",
+        type: "Hardware Issue",
+        project_id: ["1", "Project Alpha"],
+        venue_id: ["1", "Main Office"],
+        createdBy: "John Doe",
+        assigned_user: ["1", "Support Team"],
+        stage: "In Progress",
+        create_date: new Date().toISOString(),
+        status: "active",
+      },
+    ];
+  };
+
   // Update the stats calculation to handle API data stages correctly
   useEffect(() => {
     const total = tickets.length;
@@ -77,8 +263,11 @@ const TicketTable = () => {
     const sent = tickets.filter(
       (t) => t.stage?.toLowerCase() === "sent"
     ).length;
+    const unresolved = tickets.filter(
+      (t) => t.stage?.toLowerCase() === "new" || !t.stage
+    ).length;
 
-    setStats({ total, inProgress, done, sent });
+    setStats({ total, inProgress, done, sent, unresolved });
   }, [tickets]);
 
   // Load categories from localStorage on component mount
@@ -255,6 +444,58 @@ const TicketTable = () => {
     };
   };
 
+  const fetchTickets = async () => {
+    try {
+      setIsFetchingTickets(true);
+      setApiError("");
+
+      const apiDomain = localStorage.getItem("apiDomain");
+      const dbName = localStorage.getItem("dbName");
+
+      const response = await fetch("/api/get-created-tickets", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          login: userLoginData.email,
+          password: userLoginData.password,
+          apiKey: userLoginData["api-Key"],
+          db: dbName,
+          apiDomain,
+        }),
+      });
+
+      let tickets;
+      if (!response.ok) {
+        console.warn("Failed to fetch tickets from API, using dummy data");
+        tickets = getDummyTickets();
+      } else {
+        const data = await response.json();
+        tickets = data?.records || [];
+      }
+
+      if (tickets.length > 0) {
+        const transformedTickets = tickets.map(transformApiTicket);
+        setTickets(transformedTickets);
+        // Initialize visible tickets with first page
+        setVisibleTickets(transformedTickets.slice(0, TICKETS_PER_PAGE));
+      } else {
+        setTickets([]);
+        setVisibleTickets([]);
+        setApiError("No tickets found");
+      }
+    } catch (error) {
+      console.error("Error fetching tickets:", error);
+      // Fall back to dummy data on error
+      const dummyTickets = getDummyTickets();
+      setTickets(dummyTickets);
+      setVisibleTickets(dummyTickets.slice(0, TICKETS_PER_PAGE));
+    } finally {
+      setIsFetchingTickets(false);
+    }
+  };
+
   const transformApiTicket = (apiTicket) => {
     return {
       id: apiTicket.id ? `HT${String(apiTicket.id).padStart(5, "0")}` : "N/A",
@@ -276,51 +517,6 @@ const TicketTable = () => {
       status: apiTicket.status || "new",
     };
   };
-  const fetchTickets = async () => {
-    try {
-      setIsLoading(true);
-      setApiError("");
-
-      const apiDomain = localStorage.getItem("apiDomain");
-      const dbName = localStorage.getItem("dbName");
-      console.log(apiDomain, dbName);
-
-      const response = await fetch("/api/get-created-tickets", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          login: userLoginData.email,
-          password: userLoginData.password,
-          apiKey: userLoginData["api-Key"],
-          db: dbName,
-          apiDomain,
-        }),
-      });
-      if (!response.ok) {
-        throw new Error("Failed to fetch tickets");
-      }
-
-      const data = await response.json();
-
-      if (data && Array.isArray(data.records)) {
-        const transformedTickets = data.records.map(transformApiTicket);
-        setTickets(transformedTickets);
-      } else {
-        setTickets([]);
-        setApiError("No tickets found");
-      }
-    } catch (error) {
-      console.error("Error fetching tickets:", error);
-      setApiError("Error loading tickets. Please try again later.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-  console.log(tickets);
-
-  // Add these new functions
 
   const handleSaveAsDraft = (data) => {
     const draftTicket = {
@@ -447,6 +643,10 @@ const TicketTable = () => {
     }
   };
 
+  useEffect(() => {
+    fetchTickets();
+  }, []); // This effect runs only once on mount
+
   const onSubmit = async (data) => {
     try {
       setIsSubmitting(true);
@@ -529,35 +729,57 @@ const TicketTable = () => {
     }
   };
 
-  // Remove the cleanup function from fetchTickets useEffect
-  useEffect(() => {
-    fetchTickets();
-  }, []); // This effect runs only once on mount
-
   const handleSubmitDraft = async (draft) => {
     try {
       setIsSubmitting(true);
 
-      // Use the stored formData from the draft
+      const storedTicketTypes = localStorage.getItem("ticketTypes");
+      if (!storedTicketTypes) {
+        throw new Error("No ticket types found. Please refresh the page.");
+      }
+
+      const ticketTypes = JSON.parse(storedTicketTypes);
+
+      // Find the ticket type directly from stored data
+      const selectedTicketType = ticketTypes.find(
+        (type) =>
+          type.name.toLowerCase() === draft.type.toLowerCase() &&
+          type.category_id[1] === draft.category
+      );
+
+      if (!selectedTicketType) {
+        throw new Error("Invalid ticket type for the selected category");
+      }
+
+      const apiDomain = localStorage.getItem("apiDomain");
+      const dbName = localStorage.getItem("dbName");
+
+      const ticketData = {
+        category_id: selectedTicketType.category_id[0],
+        ticket_type_id: selectedTicketType.id,
+        description: draft.description,
+        user_id: userLoginData.Id,
+        login: userLoginData.email,
+        password: userLoginData.password,
+        apiKey: userLoginData["api-Key"],
+        db: dbName,
+        apiDomain,
+      };
+
       const response = await fetch("/api/create-ticket", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          category_id: draft.formData.category_id,
-          ticket_type_id: draft.formData.ticket_type_id,
-          description: draft.description,
-          user_id: userLoginData.Id,
-          login: userLoginData.email,
-          password: userLoginData.password,
-          apiKey: userLoginData["api-Key"],
-        }),
+        body: JSON.stringify(ticketData),
       });
 
       if (!response.ok) {
-        throw new Error("Failed to submit draft ticket");
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to submit draft ticket");
       }
+
+      await response.json();
 
       // Remove from drafts
       const updatedDrafts = draftTickets.filter((d) => d.id !== draft.id);
@@ -576,7 +798,7 @@ const TicketTable = () => {
       }, 3000);
     } catch (error) {
       console.error("Error submitting draft:", error);
-      setApiError("Failed to submit draft ticket");
+      setApiError(error.message || "Failed to submit draft ticket");
     } finally {
       setIsSubmitting(false);
     }
@@ -646,6 +868,19 @@ const TicketTable = () => {
       console.error("Error editing draft:", error);
       setApiError("Failed to edit draft ticket");
     }
+  };
+
+  const handleLoadMore = () => {
+    const nextPage = currentPage + 1;
+    const start = 0;
+    const end = nextPage * TICKETS_PER_PAGE;
+    setVisibleTickets(tickets.slice(start, end));
+    setCurrentPage(nextPage);
+  };
+
+  const handleShowLess = () => {
+    setVisibleTickets(tickets.slice(0, TICKETS_PER_PAGE));
+    setCurrentPage(1);
   };
 
   return (
@@ -721,6 +956,13 @@ const TicketTable = () => {
             <p className={styles.statLabel}>Sent</p>
           </div>
         </div>
+        <div className={styles.statCard}>
+          <div className={styles.statIcon}>❗</div>
+          <div className={styles.statContent}>
+            <h3 className={styles.statNumber}>{stats.unresolved}</h3>
+            <p className={styles.statLabel}>Unresolved</p>
+          </div>
+        </div>
       </div>
 
       {/* Tickets Table */}
@@ -748,48 +990,75 @@ const TicketTable = () => {
         </div>
 
         <div className={styles.tableWrapper}>
-          {isLoading ? (
-            <div className={styles.loadingState}>Loading tickets...</div>
-          ) : apiError ? (
-            <div className={styles.errorMessage}>{apiError}</div>
+          {isFetchingTickets ? (
+            <>
+              <div className={styles.loadingState}></div>
+              <p className={styles.loadingMessage}>Loading Tickets...</p>
+            </>
           ) : activeTab === "sent" ? (
-            // Sent tickets table
-            <table className={styles.ticketTable}>
-              <thead>
-                <tr>
-                  <th>Ticket ID</th>
-                  <th>Category</th>
-                  <th>Ticket Type</th>
-                  <th>Project</th>
-                  <th>Venue</th>
-                  <th>Created By</th>
-                  <th>Assigned User</th>
-                  <th>Stage</th>
-                </tr>
-              </thead>
-              <tbody>
-                {tickets.map((ticket) => (
-                  <tr key={ticket.id} className={styles.tableRow}>
-                    <td>
-                      <div className={styles.ticketId}>{ticket.id}</div>
-                    </td>
-                    <td>{ticket.category}</td>
-                    <td>{ticket.type}</td>
-                    <td>{ticket.project_id ? ticket.project_id[1] : "-"}</td>
-                    <td>{ticket.venue_id ? ticket.venue_id[1] : "-"}</td>
-                    <td>
-                      <div className={styles.userCell}>{userName}</div>
-                    </td>
-                    <td>
-                      <div className={styles.userCell}>{userName}</div>
-                    </td>
-                    <td>{ticket.stage}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          ) : (
-            // Draft tickets table
+            apiError ? (
+              <div className={styles.errorMessage}>{apiError}</div>
+            ) : (
+              <>
+                <table className={styles.ticketTable}>
+                  <thead>
+                    <tr>
+                      <th>Ticket ID</th>
+                      <th>Category</th>
+                      <th>Ticket Type</th>
+                      <th>Project</th>
+                      <th>Venue</th>
+                      <th>Created By</th>
+                      <th>Assigned User</th>
+                      <th>Stage</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {visibleTickets.map((ticket) => (
+                      <tr key={ticket.id} className={styles.tableRow}>
+                        <td>
+                          <div className={styles.ticketId}>{ticket.id}</div>
+                        </td>
+                        <td>{ticket.category}</td>
+                        <td>{ticket.type}</td>
+                        <td>
+                          {ticket.project_id ? ticket.project_id[1] : "-"}
+                        </td>
+                        <td>{ticket.venue_id ? ticket.venue_id[1] : "-"}</td>
+                        <td>
+                          <div className={styles.userCell}>{userName}</div>
+                        </td>
+                        <td>
+                          <div className={styles.userCell}>{userName}</div>
+                        </td>
+                        <td>{ticket.stage}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+
+                {tickets.length > visibleTickets.length ? (
+                  <div className={styles.loadMoreContainer}>
+                    <button
+                      className={styles.loadMoreButton}
+                      onClick={handleLoadMore}
+                    >
+                      Load More
+                    </button>
+                  </div>
+                ) : visibleTickets.length > TICKETS_PER_PAGE ? (
+                  <div className={styles.loadMoreContainer}>
+                    <button
+                      className={styles.loadMoreButton}
+                      onClick={handleShowLess}
+                    >
+                      Show Less
+                    </button>
+                  </div>
+                ) : null}
+              </>
+            )
+          ) : draftTickets.length > 0 ? (
             <table className={styles.ticketTable}>
               <thead>
                 <tr>
@@ -835,6 +1104,10 @@ const TicketTable = () => {
                 ))}
               </tbody>
             </table>
+          ) : (
+            <p className={styles.loadingMessage}>
+              No tickets has been drafted yet.
+            </p>
           )}
         </div>
       </div>

@@ -36,8 +36,8 @@ const Profile = () => {
         latitude: parsed.employee_latitude || "N/A",
         longitude: parsed.employee_longitude || "N/A",
         employeeId: parsed.employeeId || "",
-        assigned_project: parsed.employee_assigned_project[1] || "N/A",
-        assigned_venue: parsed.employee_assigned_venue[1] || "N/A",
+        assigned_project: parsed.employee_assigned_project || "N/A",
+        assigned_venue: parsed.employee_assigned_venue || "N/A",
       });
     }
   };
@@ -45,6 +45,7 @@ const Profile = () => {
   useEffect(() => {
     loadUserData();
   }, []);
+  console.log(userData.assigned_project, userData.assigned_venue);
 
   return (
     <>

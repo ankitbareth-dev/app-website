@@ -11,7 +11,7 @@ export default defineConfig({
         secure: false,
       },
       "/odoo": {
-        target: "http://3.109.255.36",
+        target: "http://140.245.30.123:8069",
         changeOrigin: true,
         secure: false,
         rewrite: (path) => path.replace(/^\/odoo/, ""),
