@@ -2,6 +2,7 @@ import { useState, useEffect, memo } from "react";
 import { useForm } from "react-hook-form";
 import { useAppContext } from "../../store/AppContext";
 import styles from "./TicketTable.module.css";
+
 const SuccessPopup = memo(({ message }) => (
   <div className={styles.successPopup}>
     <span className={styles.successIcon}>✅</span>
@@ -27,9 +28,12 @@ const TicketTable = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const TICKETS_PER_PAGE = 10;
   const [activeTab, setActiveTab] = useState("sent");
+  const [selectedStage, setSelectedStage] = useState("Sent");
   const [draftTickets, setDraftTickets] = useState([]);
   const [editingTicket, setEditingTicket] = useState(null);
   const [tickets, setTickets] = useState([]);
+  const [showDeletePopup, setShowDeletePopup] = useState(false);
+  const [draftToDelete, setDraftToDelete] = useState(null);
   const [stats, setStats] = useState({
     total: 0,
     inProgress: 0,
@@ -37,6 +41,7 @@ const TicketTable = () => {
     sent: 0,
     unresolved: 0,
   });
+  const stages = ["New", "Sent", "In Progress", "Done"];
   const {
     register,
     handleSubmit,
@@ -65,193 +70,6 @@ const TicketTable = () => {
     }
   }, []);
 
-  //get dummy data
-  const getDummyTickets = () => {
-    return [
-      {
-        id: "HT00001",
-        category: "IT Support",
-        type: "Hardware Issue",
-        project_id: ["1", "Project Alpha"],
-        venue_id: ["1", "Main Office"],
-        createdBy: "John Doe",
-        assigned_user: ["1", "Support Team"],
-        stage: "In Progress",
-        create_date: new Date().toISOString(),
-        status: "active",
-      },
-      {
-        id: "HT00002",
-        category: "Software",
-        type: "Bug Report",
-        project_id: ["2", "Project Beta"],
-        venue_id: ["1", "Main Office"],
-        createdBy: "Jane Smith",
-        assigned_user: ["2", "Dev Team"],
-        stage: "New",
-        create_date: new Date().toISOString(),
-        status: "active",
-      },
-      {
-        id: "HT00003",
-        category: "IT Support",
-        type: "Hardware Issue",
-        project_id: ["1", "Project Alpha"],
-        venue_id: ["1", "Main Office"],
-        createdBy: "John Doe",
-        assigned_user: ["1", "Support Team"],
-        stage: "In Progress",
-        create_date: new Date().toISOString(),
-        status: "active",
-      },
-      {
-        id: "HT00004",
-        category: "IT Support",
-        type: "Hardware Issue",
-        project_id: ["1", "Project Alpha"],
-        venue_id: ["1", "Main Office"],
-        createdBy: "John Doe",
-        assigned_user: ["1", "Support Team"],
-        stage: "In Progress",
-        create_date: new Date().toISOString(),
-        status: "active",
-      },
-      {
-        id: "HT00005",
-        category: "IT Support",
-        type: "Hardware Issue",
-        project_id: ["1", "Project Alpha"],
-        venue_id: ["1", "Main Office"],
-        createdBy: "John Doe",
-        assigned_user: ["1", "Support Team"],
-        stage: "In Progress",
-        create_date: new Date().toISOString(),
-        status: "active",
-      },
-      {
-        id: "HT00006",
-        category: "IT Support",
-        type: "Hardware Issue",
-        project_id: ["1", "Project Alpha"],
-        venue_id: ["1", "Main Office"],
-        createdBy: "John Doe",
-        assigned_user: ["1", "Support Team"],
-        stage: "In Progress",
-        create_date: new Date().toISOString(),
-        status: "active",
-      },
-      {
-        id: "HT00007",
-        category: "IT Support",
-        type: "Hardware Issue",
-        project_id: ["1", "Project Alpha"],
-        venue_id: ["1", "Main Office"],
-        createdBy: "John Doe",
-        assigned_user: ["1", "Support Team"],
-        stage: "In Progress",
-        create_date: new Date().toISOString(),
-        status: "active",
-      },
-      {
-        id: "HT00008",
-        category: "IT Support",
-        type: "Hardware Issue",
-        project_id: ["1", "Project Alpha"],
-        venue_id: ["1", "Main Office"],
-        createdBy: "John Doe",
-        assigned_user: ["1", "Support Team"],
-        stage: "In Progress",
-        create_date: new Date().toISOString(),
-        status: "active",
-      },
-      {
-        id: "HT00009",
-        category: "IT Support",
-        type: "Hardware Issue",
-        project_id: ["1", "Project Alpha"],
-        venue_id: ["1", "Main Office"],
-        createdBy: "John Doe",
-        assigned_user: ["1", "Support Team"],
-        stage: "In Progress",
-        create_date: new Date().toISOString(),
-        status: "active",
-      },
-      {
-        id: "HT00010",
-        category: "IT Support",
-        type: "Hardware Issue",
-        project_id: ["1", "Project Alpha"],
-        venue_id: ["1", "Main Office"],
-        createdBy: "John Doe",
-        assigned_user: ["1", "Support Team"],
-        stage: "In Progress",
-        create_date: new Date().toISOString(),
-        status: "active",
-      },
-      {
-        id: "HT00011",
-        category: "IT Support",
-        type: "Hardware Issue",
-        project_id: ["1", "Project Alpha"],
-        venue_id: ["1", "Main Office"],
-        createdBy: "John Doe",
-        assigned_user: ["1", "Support Team"],
-        stage: "In Progress",
-        create_date: new Date().toISOString(),
-        status: "active",
-      },
-      {
-        id: "HT00012",
-        category: "IT Support",
-        type: "Hardware Issue",
-        project_id: ["1", "Project Alpha"],
-        venue_id: ["1", "Main Office"],
-        createdBy: "John Doe",
-        assigned_user: ["1", "Support Team"],
-        stage: "In Progress",
-        create_date: new Date().toISOString(),
-        status: "active",
-      },
-      {
-        id: "HT00013",
-        category: "IT Support",
-        type: "Hardware Issue",
-        project_id: ["1", "Project Alpha"],
-        venue_id: ["1", "Main Office"],
-        createdBy: "John Doe",
-        assigned_user: ["1", "Support Team"],
-        stage: "In Progress",
-        create_date: new Date().toISOString(),
-        status: "active",
-      },
-      {
-        id: "HT00014",
-        category: "IT Support",
-        type: "Hardware Issue",
-        project_id: ["1", "Project Alpha"],
-        venue_id: ["1", "Main Office"],
-        createdBy: "John Doe",
-        assigned_user: ["1", "Support Team"],
-        stage: "In Progress",
-        create_date: new Date().toISOString(),
-        status: "active",
-      },
-      {
-        id: "HT00015",
-        category: "IT Support",
-        type: "Hardware Issue",
-        project_id: ["1", "Project Alpha"],
-        venue_id: ["1", "Main Office"],
-        createdBy: "John Doe",
-        assigned_user: ["1", "Support Team"],
-        stage: "In Progress",
-        create_date: new Date().toISOString(),
-        status: "active",
-      },
-    ];
-  };
-
-  // Update the stats calculation to handle API data stages correctly
   useEffect(() => {
     const total = tickets.length;
     const inProgress = tickets.filter(
@@ -270,23 +88,19 @@ const TicketTable = () => {
     setStats({ total, inProgress, done, sent, unresolved });
   }, [tickets]);
 
-  // Load categories from localStorage on component mount
   useEffect(() => {
     const storedCategories = localStorage.getItem("ticketCategories");
     if (storedCategories) {
       try {
         const parsedCategories = JSON.parse(storedCategories);
-
-        // Extract category names from category_id[1] and filter duplicates/empty
         const categoryNames = parsedCategories
-          .filter((cat) => Array.isArray(cat.category_id)) // Only process records where category_id is an array
-          .map((cat) => cat.category_id[1]) // Get category name from index 1
+          .filter((cat) => Array.isArray(cat.category_id))
+          .map((cat) => cat.category_id[1])
           .filter(
             (name) => name && typeof name === "string" && name.trim() !== ""
-          ) // Filter out empty/null values
-          .filter((name, index, arr) => arr.indexOf(name) === index); // Remove duplicates
+          )
+          .filter((name, index, arr) => arr.indexOf(name) === index);
 
-        // Convert to format expected by the dropdown
         const formattedCategories = categoryNames.map((name, index) => ({
           id: index + 1,
           complete_name: name,
@@ -299,7 +113,6 @@ const TicketTable = () => {
     }
   }, []);
 
-  // Load ticket types from localStorage on component mount
   useEffect(() => {
     const storedTicketTypes = localStorage.getItem("ticketTypes");
     if (storedTicketTypes) {
@@ -312,11 +125,18 @@ const TicketTable = () => {
     }
   }, []);
 
-  // Function to handle category selection and filter ticket types
+  useEffect(() => {
+    const filteredTickets = tickets.filter(
+      (ticket) => ticket.stage?.toLowerCase() === selectedStage.toLowerCase()
+    );
+    const start = 0;
+    const end = currentPage * TICKETS_PER_PAGE;
+    setVisibleTickets(filteredTickets.slice(start, end));
+  }, [tickets, selectedStage, currentPage]);
+
   const handleCategoryChange = (selectedCategoryName) => {
     if (selectedCategoryName === "none") {
       setFilteredTicketTypes([]);
-      // Clear form fields when no category is selected
       setApiData((prevData) => ({
         ...prevData,
         riskLevel: "",
@@ -325,12 +145,10 @@ const TicketTable = () => {
         expectedResolutionTime: "",
         noOfSystemAffected: "",
       }));
-      // Reset ticket type dropdown
       setValue("ticketType", "");
       return;
     }
 
-    // Find the selected category's ID from allTicketTypes (since they come from same API now)
     if (allTicketTypes.length > 0) {
       try {
         const selectedCategory = allTicketTypes.find(
@@ -341,8 +159,6 @@ const TicketTable = () => {
 
         if (selectedCategory) {
           const selectedCategoryId = selectedCategory.category_id[0];
-
-          // Filter ticket types that have the same category_id[0]
           const filtered = allTicketTypes.filter(
             (ticketType) =>
               Array.isArray(ticketType.category_id) &&
@@ -350,8 +166,6 @@ const TicketTable = () => {
           );
 
           setFilteredTicketTypes(filtered);
-
-          // Clear form fields when category changes (user needs to select ticket type again)
           setApiData((prevData) => ({
             ...prevData,
             riskLevel: "",
@@ -360,8 +174,6 @@ const TicketTable = () => {
             expectedResolutionTime: "",
             noOfSystemAffected: "",
           }));
-
-          // Reset ticket type dropdown
           setValue("ticketType", "");
         }
       } catch (error) {
@@ -370,13 +182,11 @@ const TicketTable = () => {
     }
   };
 
-  // Function to handle ticket type selection and auto-fill form fields
   const handleTicketTypeChange = (selectedTicketTypeName) => {
     if (selectedTicketTypeName === "" || selectedTicketTypeName === "none") {
       return;
     }
 
-    // Find the selected ticket type data from localStorage
     const storedTicketTypes = localStorage.getItem("ticketTypes");
     if (storedTicketTypes) {
       try {
@@ -386,7 +196,6 @@ const TicketTable = () => {
         );
 
         if (selectedTicketType) {
-          // Update form fields with the selected ticket type data
           const formData = {
             riskLevel: Array.isArray(selectedTicketType.risk_level_id)
               ? selectedTicketType.risk_level_id[1]
@@ -402,7 +211,6 @@ const TicketTable = () => {
             noOfSystemAffected: selectedTicketType.no_of_system_affected || "",
           };
 
-          // Update apiData with the new form data
           setApiData((prevData) => ({
             ...prevData,
             ...formData,
@@ -413,21 +221,6 @@ const TicketTable = () => {
       }
     }
   };
-
-  /* const getStageClass = (stage) => {
-    switch (stage.toLowerCase()) {
-      case "draft":
-        return styles.stageDraft;
-      case "done":
-        return styles.stageDone;
-      case "in progress":
-        return styles.stageInProgress;
-      case "sent":
-        return styles.stageSent;
-      default:
-        return styles.stageDefault;
-    }
-  }; */
 
   const getDefaultFormData = () => {
     return {
@@ -466,19 +259,16 @@ const TicketTable = () => {
         }),
       });
 
-      let tickets;
       if (!response.ok) {
-        console.warn("Failed to fetch tickets from API, using dummy data");
-        tickets = getDummyTickets();
-      } else {
-        const data = await response.json();
-        tickets = data?.records || [];
+        throw new Error("Failed to fetch tickets");
       }
+      setIsFetchingTickets(false);
 
-      if (tickets.length > 0) {
-        const transformedTickets = tickets.map(transformApiTicket);
+      const data = await response.json();
+
+      if (data && Array.isArray(data.records)) {
+        const transformedTickets = data.records.map(transformApiTicket);
         setTickets(transformedTickets);
-        // Initialize visible tickets with first page
         setVisibleTickets(transformedTickets.slice(0, TICKETS_PER_PAGE));
       } else {
         setTickets([]);
@@ -487,10 +277,7 @@ const TicketTable = () => {
       }
     } catch (error) {
       console.error("Error fetching tickets:", error);
-      // Fall back to dummy data on error
-      const dummyTickets = getDummyTickets();
-      setTickets(dummyTickets);
-      setVisibleTickets(dummyTickets.slice(0, TICKETS_PER_PAGE));
+      setApiError("Error loading tickets. Please try again later.");
     } finally {
       setIsFetchingTickets(false);
     }
@@ -498,7 +285,9 @@ const TicketTable = () => {
 
   const transformApiTicket = (apiTicket) => {
     return {
-      id: apiTicket.id ? `HT${String(apiTicket.id).padStart(5, "0")}` : "N/A",
+      id: apiTicket.number
+        ? `HT${String(apiTicket.number).padStart(5, "0")}`
+        : "N/A",
       title: apiTicket.name || "Untitled",
       type: Array.isArray(apiTicket.ticket_type_id)
         ? apiTicket.ticket_type_id[1]
@@ -516,35 +305,6 @@ const TicketTable = () => {
       create_date: apiTicket.create_date || new Date().toISOString(),
       status: apiTicket.status || "new",
     };
-  };
-
-  const handleSaveAsDraft = (data) => {
-    const draftTicket = {
-      id: `DRAFT-${String(Date.now()).slice(-5)}`,
-      category: data.category || "N/A",
-      type: data.ticketType || "N/A",
-      project_id: [null, projectName],
-      venue_id: [null, userVenue],
-      description: data.description,
-      createdBy: userName,
-      stage: "Draft",
-      created_at: new Date().toISOString(),
-      formData: { ...data, ...apiData },
-    };
-
-    const updatedDrafts = [...draftTickets, draftTicket];
-    setDraftTickets(updatedDrafts);
-    localStorage.setItem("draftTickets", JSON.stringify(updatedDrafts));
-
-    // Show success popup
-    setSuccessMessage("Ticket saved as draft");
-    setShowSuccessPopup(true);
-    setTimeout(() => setShowSuccessPopup(false), 3000);
-
-    // Reset form
-    reset();
-    setShowForm(false);
-    setApiData(null);
   };
 
   const handleGenerateTicket = async () => {
@@ -565,7 +325,7 @@ const TicketTable = () => {
           login: userLoginData.email,
           password: userLoginData.password,
           apiKey: userLoginData["api-Key"],
-          apiDomain: localStorage.getItem("apiDomain"), // Needed for backend
+          apiDomain: localStorage.getItem("apiDomain"),
         });
 
         const [ticketTypesRes, categoriesRes] = await Promise.all([
@@ -593,14 +353,12 @@ const TicketTable = () => {
         const [ticketTypesData, categoriesData] = responses;
 
         if (ticketTypesData?.records) {
-          // Store ticket types
           localStorage.setItem(
             "ticketTypes",
             JSON.stringify(ticketTypesData.records)
           );
           setAllTicketTypes(ticketTypesData.records);
 
-          // Extract and store categories
           const categoryNames = ticketTypesData.records
             .filter((record) => Array.isArray(record.category_id))
             .map((record) => record.category_id[1])
@@ -614,7 +372,6 @@ const TicketTable = () => {
             complete_name: name,
           }));
 
-          // Save both to localStorage
           localStorage.setItem(
             "ticketCategories",
             JSON.stringify(ticketTypesData.records)
@@ -627,7 +384,6 @@ const TicketTable = () => {
         setApiData(ticketTypesData || getDefaultFormData());
         setShowForm(true);
 
-        // Scroll to form after it appears
         setTimeout(() => {
           document.querySelector(`.${styles.formContainer}`)?.scrollIntoView({
             behavior: "smooth",
@@ -645,90 +401,105 @@ const TicketTable = () => {
 
   useEffect(() => {
     fetchTickets();
-  }, []); // This effect runs only once on mount
+  }, []);
 
   const onSubmit = async (data) => {
     try {
       setIsSubmitting(true);
 
-      const selectedTicketType = filteredTicketTypes.find(
-        (type) => type.name === data.ticketType
-      );
-
-      if (!selectedTicketType) {
-        throw new Error("Please select a valid ticket type");
-      }
-
-      const apiDomain = localStorage.getItem("apiDomain");
-      const dbName = localStorage.getItem("dbName");
-
-      const ticketData = {
-        category_id: selectedTicketType.category_id[0],
-        ticket_type_id: selectedTicketType.id,
-        description: data.description,
-        user_id: userLoginData.Id,
-        login: userLoginData.email,
-        password: userLoginData.password,
-        apiKey: userLoginData["api-Key"],
-        db: dbName,
-        apiDomain,
-      };
-
-      const response = await fetch("/api/create-ticket", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(ticketData),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to create ticket");
-      }
-
-      await response.json();
-
-      // If we were editing a draft, remove it from drafts
       if (editingTicket) {
-        const updatedDrafts = draftTickets.filter(
-          (d) => d.id !== editingTicket.id
+        // Update draft ticket in localStorage
+        const updatedDraft = {
+          ...editingTicket,
+          category: data.category,
+          type: data.ticketType,
+          description: data.description,
+          formData: { ...data, ...apiData },
+          created_at: new Date().toISOString(),
+        };
+
+        const updatedDrafts = draftTickets.map((draft) =>
+          draft.id === editingTicket.id ? updatedDraft : draft
         );
+
         setDraftTickets(updatedDrafts);
         localStorage.setItem("draftTickets", JSON.stringify(updatedDrafts));
+
+        setSuccessMessage("Draft updated successfully");
+        setShowSuccessPopup(true);
+        setTimeout(() => setShowSuccessPopup(false), 3000);
+
+        // Reset form and states
+        setShowForm(false);
+        setApiData(null);
+        setFilteredTicketTypes([]);
+        setEditingTicket(null);
+        reset();
+      } else {
+        // Submit new ticket to API
+        const selectedTicketType = filteredTicketTypes.find(
+          (type) => type.name === data.ticketType
+        );
+
+        if (!selectedTicketType) {
+          throw new Error("Please select a valid ticket type");
+        }
+
+        const apiDomain = localStorage.getItem("apiDomain");
+        const dbName = localStorage.getItem("dbName");
+
+        const ticketData = {
+          category_id: selectedTicketType.category_id[0],
+          ticket_type_id: selectedTicketType.id,
+          description: data.description,
+          user_id: userLoginData.Id,
+          login: userLoginData.email,
+          password: userLoginData.password,
+          apiKey: userLoginData["api-Key"],
+          db: dbName,
+          apiDomain,
+        };
+
+        const response = await fetch("/api/create-ticket", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(ticketData),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || "Failed to create ticket");
+        }
+
+        await response.json();
+
+        setSuccessMessage("Ticket created successfully");
+        setShowSuccessPopup(true);
+        setTimeout(() => {
+          setShowSuccessPopup(false);
+        }, 3000);
+
+        // Reset form and states
+        setShowForm(false);
+        setApiData(null);
+        setFilteredTicketTypes([]);
+        setEditingTicket(null);
+        reset();
+
+        // Refresh tickets list
+        await fetchTickets();
       }
-
-      // Reset states
-      setShowForm(false);
-      setApiData(null);
-      setCategories([]);
-      setFilteredTicketTypes([]);
-      setEditingTicket(null);
-      reset();
-
-      // Refresh tickets list
-      await fetchTickets();
-
-      // Show success message
-      setSuccessMessage(
-        editingTicket
-          ? "Draft updated and submitted successfully"
-          : "Ticket created successfully"
-      );
-      setShowSuccessPopup(true);
-      setTimeout(() => {
-        setShowSuccessPopup(false);
-      }, 3000);
     } catch (error) {
-      console.error("Error creating/updating ticket:", error);
+      console.error("Error handling ticket:", error);
       setApiError(
-        error.message || "Failed to create/update ticket. Please try again."
+        error.message || "Failed to process ticket. Please try again."
       );
     } finally {
       setIsSubmitting(false);
     }
   };
-
   const handleSubmitDraft = async (draft) => {
     try {
       setIsSubmitting(true);
@@ -740,7 +511,6 @@ const TicketTable = () => {
 
       const ticketTypes = JSON.parse(storedTicketTypes);
 
-      // Find the ticket type directly from stored data
       const selectedTicketType = ticketTypes.find(
         (type) =>
           type.name.toLowerCase() === draft.type.toLowerCase() &&
@@ -781,16 +551,13 @@ const TicketTable = () => {
 
       await response.json();
 
-      // Remove from drafts
       const updatedDrafts = draftTickets.filter((d) => d.id !== draft.id);
       setDraftTickets(updatedDrafts);
       localStorage.setItem("draftTickets", JSON.stringify(updatedDrafts));
 
-      // Show success message
       setSuccessMessage("Draft ticket submitted successfully");
       setShowSuccessPopup(true);
 
-      // Refresh tickets list
       await fetchTickets();
 
       setTimeout(() => {
@@ -804,20 +571,46 @@ const TicketTable = () => {
     }
   };
 
+  const handleSaveAsDraft = (data) => {
+    const draftTicket = {
+      id: `DRAFT-${String(Date.now()).slice(-5)}`,
+      category: data.category,
+      type: data.ticketType,
+      project_id: [null, projectName],
+      venue_id: [null, userVenue],
+      description: data.description,
+      createdBy: userName,
+      stage: "Draft",
+      created_at: new Date().toISOString(),
+      formData: { ...data, ...apiData },
+    };
+
+    const updatedDrafts = [...draftTickets, draftTicket];
+    setDraftTickets(updatedDrafts);
+    localStorage.setItem("draftTickets", JSON.stringify(updatedDrafts));
+
+    setSuccessMessage("Ticket saved as draft");
+    setShowSuccessPopup(true);
+    setTimeout(() => setShowSuccessPopup(false), 3000);
+
+    reset();
+    setShowForm(false);
+    setApiData(null);
+    setFilteredTicketTypes([]);
+  };
+
   const handleDeleteDraft = (draftId) => {
+    setDraftToDelete(draftId);
+    setShowDeletePopup(true);
+  };
+
+  const confirmDeleteDraft = () => {
     try {
-      // Filter out the draft to be deleted
       const updatedDrafts = draftTickets.filter(
-        (draft) => draft.id !== draftId
+        (draft) => draft.id !== draftToDelete
       );
-
-      // Update state
       setDraftTickets(updatedDrafts);
-
-      // Update localStorage
       localStorage.setItem("draftTickets", JSON.stringify(updatedDrafts));
-
-      // Show success message
       setSuccessMessage("Draft ticket deleted successfully");
       setShowSuccessPopup(true);
       setTimeout(() => {
@@ -826,39 +619,58 @@ const TicketTable = () => {
     } catch (error) {
       console.error("Error deleting draft:", error);
       setApiError("Failed to delete draft ticket");
+    } finally {
+      setShowDeletePopup(false);
+      setDraftToDelete(null);
     }
   };
 
   const handleEditDraft = (draft) => {
     try {
-      // Set editing mode
-      setEditingTicket(draft);
+      // Reload categories from localStorage if not already present
+      if (categories.length === 0) {
+        const storedCategories = localStorage.getItem("ticketCategories");
+        if (storedCategories) {
+          const parsedCategories = JSON.parse(storedCategories);
+          const categoryNames = parsedCategories
+            .filter((cat) => Array.isArray(cat.category_id))
+            .map((cat) => cat.category_id[1])
+            .filter(
+              (name) => name && typeof name === "string" && name.trim() !== ""
+            )
+            .filter((name, index, arr) => arr.indexOf(name) === index);
 
-      // Show form
+          const formattedCategories = categoryNames.map((name, index) => ({
+            id: index + 1,
+            complete_name: name,
+          }));
+
+          setCategories(formattedCategories);
+        } else {
+          setApiError("No categories found in localStorage");
+        }
+      }
+
+      setEditingTicket(draft);
       setShowForm(true);
 
-      // Pre-fill form with draft data
       setValue("category", draft.category);
       setValue("ticketType", draft.type);
       setValue("description", draft.description);
 
       if (draft.formData) {
-        // Set additional form data if it exists
         Object.keys(draft.formData).forEach((key) => {
           setValue(key, draft.formData[key]);
         });
 
-        // Update API data
         setApiData({
           ...getDefaultFormData(),
           ...draft.formData,
         });
 
-        // Trigger category change to load correct ticket types
         handleCategoryChange(draft.category);
       }
 
-      // Scroll to form
       setTimeout(() => {
         document.querySelector(`.${styles.formContainer}`)?.scrollIntoView({
           behavior: "smooth",
@@ -872,20 +684,53 @@ const TicketTable = () => {
 
   const handleLoadMore = () => {
     const nextPage = currentPage + 1;
+    const filteredTickets = tickets.filter(
+      (ticket) => ticket.stage?.toLowerCase() === selectedStage.toLowerCase()
+    );
     const start = 0;
     const end = nextPage * TICKETS_PER_PAGE;
-    setVisibleTickets(tickets.slice(start, end));
+    setVisibleTickets(filteredTickets.slice(start, end));
     setCurrentPage(nextPage);
   };
 
   const handleShowLess = () => {
-    setVisibleTickets(tickets.slice(0, TICKETS_PER_PAGE));
+    const filteredTickets = tickets.filter(
+      (ticket) => ticket.stage?.toLowerCase() === selectedStage.toLowerCase()
+    );
+    setVisibleTickets(filteredTickets.slice(0, TICKETS_PER_PAGE));
     setCurrentPage(1);
   };
 
   return (
     <div className={styles.dashboardContainer}>
-      {/* Check-in Required Message */}
+      {showDeletePopup && (
+        <div className={styles.deletePopupOverlay}>
+          <div className={styles.deletePopup}>
+            <div className={styles.messageIcon}>⚠️</div>
+            <h3 className={styles.messageTitle}>Confirm Delete</h3>
+            <p className={styles.messageText}>
+              Do you really want to delete this draft ticket?
+            </p>
+            <div className={styles.popupActions}>
+              <button
+                className={styles.confirmBtn}
+                onClick={confirmDeleteDraft}
+              >
+                Yes
+              </button>
+              <button
+                className={styles.cancelBtn}
+                onClick={() => {
+                  setShowDeletePopup(false);
+                  setDraftToDelete(null);
+                }}
+              >
+                No
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {showCheckInMessage && (
         <div className={styles.checkInMessageOverlay}>
           <div className={styles.checkInMessage}>
@@ -905,7 +750,6 @@ const TicketTable = () => {
         </div>
       )}
 
-      {/* Dashboard Header */}
       <div className={styles.dashboardHeader}>
         <div className={styles.headerContent}>
           <h1 className={styles.dashboardTitle}>Ticket Management Dashboard</h1>
@@ -926,7 +770,6 @@ const TicketTable = () => {
         </div>
       </div>
 
-      {/* Stats Cards */}
       <div className={styles.statsContainer}>
         <div className={styles.statCard}>
           <div className={styles.statIcon}>📊</div>
@@ -965,7 +808,6 @@ const TicketTable = () => {
         </div>
       </div>
 
-      {/* Tickets Table */}
       <div className={styles.tableContainer}>
         <div className={styles.tableHeader}>
           <h2 className={styles.tableTitle}>Tickets</h2>
@@ -976,7 +818,7 @@ const TicketTable = () => {
               }`}
               onClick={() => setActiveTab("sent")}
             >
-              Sent
+              Tickets
             </button>
             <button
               className={`${styles.tabButton} ${
@@ -986,6 +828,19 @@ const TicketTable = () => {
             >
               Draft
             </button>
+            {activeTab === "sent" && (
+              <select
+                className={styles.stageDropdown}
+                value={selectedStage}
+                onChange={(e) => setSelectedStage(e.target.value)}
+              >
+                {stages.map((stage) => (
+                  <option key={stage} value={stage}>
+                    {stage}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
         </div>
 
@@ -998,6 +853,10 @@ const TicketTable = () => {
           ) : activeTab === "sent" ? (
             apiError ? (
               <div className={styles.errorMessage}>{apiError}</div>
+            ) : visibleTickets.length === 0 ? (
+              <p className={styles.noDataMessage}>
+                No tickets found for the {selectedStage} stage.
+              </p>
             ) : (
               <>
                 <table className={styles.ticketTable}>
@@ -1037,7 +896,16 @@ const TicketTable = () => {
                   </tbody>
                 </table>
 
-                {tickets.length > visibleTickets.length ? (
+                {tickets.filter(
+                  (ticket) =>
+                    ticket.stage?.toLowerCase() === selectedStage.toLowerCase()
+                ).length > TICKETS_PER_PAGE &&
+                visibleTickets.length <
+                  tickets.filter(
+                    (ticket) =>
+                      ticket.stage?.toLowerCase() ===
+                      selectedStage.toLowerCase()
+                  ).length ? (
                   <div className={styles.loadMoreContainer}>
                     <button
                       className={styles.loadMoreButton}
@@ -1078,7 +946,7 @@ const TicketTable = () => {
                     <td>{draft.type}</td>
                     <td>{draft.description}</td>
                     <td>{new Date(draft.created_at).toLocaleDateString()}</td>
-                    <td>
+                    <td className="draftContainer">
                       <div className={styles.actionButtons}>
                         <button
                           className={styles.editButton}
@@ -1105,14 +973,13 @@ const TicketTable = () => {
               </tbody>
             </table>
           ) : (
-            <p className={styles.loadingMessage}>
-              No tickets has been drafted yet.
+            <p className={styles.noDataMessage}>
+              No tickets have been drafted yet.
             </p>
           )}
         </div>
       </div>
 
-      {/* Create Ticket Form */}
       {showForm && apiData && (
         <div className={styles.formContainer}>
           <div className={styles.formWrapper}>
@@ -1122,7 +989,6 @@ const TicketTable = () => {
               className={styles.ticketForm}
             >
               <div className={styles.formGrid}>
-                {/* User Input Fields */}
                 <div className={styles.formGroup}>
                   <label className={styles.formLabel}>Category</label>
                   <select
@@ -1182,7 +1048,6 @@ const TicketTable = () => {
                   />
                 </div>
 
-                {/* Read-only API Fields */}
                 <div className={styles.formGroup}>
                   <label className={styles.formLabel}>Risk Level</label>
                   <input
@@ -1300,7 +1165,6 @@ const TicketTable = () => {
                     setShowForm(false);
                     setApiData(null);
                     setEditingTicket(null);
-                    setCategories([]);
                     setFilteredTicketTypes([]);
                     reset();
                   }}

@@ -224,6 +224,8 @@
 .ticketTable th,
 .ticketTable td {
   white-space: nowrap;
+  overflow: hidden; /* Hide anything overflowing */
+  text-overflow: ellipsis;
   padding: 12px 16px;
   min-width: 120; /* Table scroll wrapper for mobile */
 }
@@ -231,12 +233,6 @@
   width: 100%;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
-}
-
-.ticketTable {
-  width: 100%;
-  min-width: 800px; /* Minimum width for all columns */
-  table-layout: fixed;
 }
 
 /* Specific column widths */
@@ -659,7 +655,6 @@
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  margin-right: 8px;
 }
 
 .editBtn {
@@ -825,4 +820,118 @@
 
 .loadMoreButton:hover {
   background-color: #e0e0e0;
+}
+
+.deletePopupOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.deletePopup {
+  background: rgba(25, 25, 50, 0.95);
+  backdrop-filter: blur(20px);
+  border: 2px solid rgba(255, 193, 7, 0.6);
+  border-radius: 1.25rem;
+  padding: 2rem;
+  max-width: 60vw;
+  width: 100%;
+  text-align: center;
+  color: white;
+  box-shadow: 0 1.25rem 2.5rem rgba(0, 0, 0, 0.3);
+}
+
+.messageIcon {
+  font-size: 48px;
+  margin-bottom: 20px;
+}
+
+.messageTitle {
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0 0 15px 0;
+  color: #ffc107;
+}
+
+.messageText {
+  font-size: 16px;
+  line-height: 1.6;
+  margin: 0 0 30px 0;
+  opacity: 0.9;
+}
+
+.popupActions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.confirmBtn {
+  background: #ffc107;
+  color: #000;
+  border: none;
+  padding: 12px 30px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.confirmBtn:hover {
+  background: #ffca2c;
+  transform: translateY(-2px);
+}
+
+.cancelBtn {
+  background: #6b7280;
+  color: white;
+  border: none;
+  padding: 12px 30px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.cancelBtn:hover {
+  background: #4b5563;
+  transform: translateY(-2px);
+}
+.stageDropdown {
+  background: rgba(25, 25, 50, 0.95);
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(78, 205, 196, 0.4);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 14px;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-left: 10px;
+}
+
+.stageDropdown:focus {
+  outline: none;
+  border-color: #4ecdc4;
+  box-shadow: 0 0 0 3px rgba(78, 205, 196, 0.3);
+}
+
+.stageDropdown option {
+  background: rgba(25, 25, 50, 1);
+  color: white;
+}
+.noDataMessage {
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+  font-style: italic;
 }
